@@ -45,8 +45,9 @@ def write_data_time_field_specs(writer):
     open_figure_bracket(writer, 2)
     writer.write('\t\t\t"name": "data_time",\n')
     writer.write('\t\t\t"dataType": "STRING",\n')
-    writer.write('\t\t\t"format": "yyyy-MM-dd HH:mm:ss",\n')
+    writer.write('\t\t\t"format": "yyyy-MM-dd HH:mm:ss"\n')
     close_figure_bracket(writer, 2)
+    write_new_line(writer)
     close_square_bracket(writer)
 
 
@@ -71,5 +72,7 @@ with open(schema_file, 'w') as writer:
             write_comma_and_new_line(writer)
     write_new_line(writer)
     close_square_bracket(writer)
+    write_comma_and_new_line(writer)
     write_data_time_field_specs(writer)
+    write_new_line(writer)
     close_figure_bracket(writer, 0)
