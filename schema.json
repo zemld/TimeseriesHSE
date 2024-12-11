@@ -1484,7 +1484,7 @@
 			"dataType": "DOUBLE"
 		}
 	],
-	"dataTimeFieldSpecs": [
+	"dataFieldSpecs": [
 		{
 			"name": "data_time",
 			"dataType": "STRING",
