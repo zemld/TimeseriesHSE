@@ -1,0 +1,15 @@
+{
+    "tableName": "electricity_data",
+    "tableType": "OFFLINE",
+    "segmentsConfig": {
+      "timeColumnName": "timestamp",
+      "schemaName": "electricity",
+      "replication": "1"
+    },
+    "tableIndexConfig": {
+      "loadMode": "MMAP",
+      "invertedIndexColumns": ["dimension"]
+    },
+    "tenants": {},
+    "metadata": {}
+}
