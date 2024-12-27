@@ -1,0 +1,19 @@
+services:
+  webapp:
+    build: .
+    ports:
+      - "8000:5000"
+    
+  db:
+    image: timescale/timescaledb:latest-pg17
+    ports:
+      - "5432:5432"
+    volumes:
+      - timeseries_data:/var/lib/postgresql/data
+    environment:
+      POSTGES_PASSWORD: secret
+      POSTGRES_USER: user
+      POSTGRES_DB: db
+
+volumes:
+  timeseries_data:
