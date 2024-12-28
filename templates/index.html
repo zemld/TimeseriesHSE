@@ -59,7 +59,7 @@
             <option value="animal">Animals</option>
         </select>
         <select id="valueDropdown" disabled>
-            <option value="" disabled selected>Choose option 2</option>
+            <option value="" disabled selected>Выберите значение категории</option>
         </select>
         <input type="date" id="startDate">
         <input type="date" id="endDate">
@@ -84,7 +84,7 @@
         };
 
         categoryDropdown.addEventListener('change', function () {
-            valueDropdown.innerHTML = '<option value="" disabled selected>Choose option 2</option>';
+            valueDropdown.innerHTML = '<option value="" disabled selected>Выберите значение категории</option>';
             const selectedCategory = categoryDropdown.value;
             options[selectedCategory].forEach(item => {
                 const option = document.createElement('option');
@@ -132,13 +132,13 @@
         }
 
         const data = {
-            categoryDropdown: category,
-            valueDropdown: value,
+            category: category,
+            value: value,
             start_date: start_date,
             end_date: end_date,
         };
 
-        fetch('/draw-chart', {
+        fetch('/get-parameters', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
