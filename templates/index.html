@@ -138,7 +138,7 @@
             end_date: end_date,
         };
 
-        fetch('/get-parameters', {
+        fetch('/chart-parameters', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -146,10 +146,12 @@
             body: JSON.stringify(data)
         })
         .then(response => response.json())
-        .then(result => {
-            console.log(result);
-            alert('График построен успешно!');
-            // Здесь можно добавить логику для отображения графика
+        .then(data => {
+            if (data.redirect) {
+                window.location.href = data.redirect; // Перенаправляем браузер
+            } else if (data.error) {
+                alert('Ошибка: ' + data.error);
+            }
         })
         .catch(error => {
             console.error('Ошибка:', error);
