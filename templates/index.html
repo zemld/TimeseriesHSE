@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dropdowns and Date Pickers</title>
+    <title>Dependent Dropdowns</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -16,7 +16,6 @@
             background-color: #f9f9f9;
         }
         .form-container {
-            width: 300px;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -54,38 +53,112 @@
 </head>
 <body>
     <div class="form-container">
-        <!-- Выпадающие списки -->
-        <select>
-            <option value="" disabled selected>Choose option 1</option>
-            <option value="1">Option 1</option>
-            <option value="2">Option 2</option>
-            <option value="3">Option 3</option>
+        <select id="categoryDropdown">
+            <option value="" disabled selected>Выберите категорию</option>
+            <option value="fruit">Fruits</option>
+            <option value="animal">Animals</option>
         </select>
-        <select>
+        <select id="valueDropdown" disabled>
             <option value="" disabled selected>Choose option 2</option>
-            <option value="1">Option 1</option>
-            <option value="2">Option 2</option>
-            <option value="3">Option 3</option>
         </select>
-        <!-- Поля выбора даты -->
-        <input type="date" id="date1">
-        <input type="date" id="date2">
-        <!-- Кнопка -->
+        <input type="date" id="startDate">
+        <input type="date" id="endDate">
         <button id="draw-chart-button">Нарисовать график</button>
     </div>
     <script>
-        // Устанавливаем текущую дату
         const today = new Date();
         const yyyy = today.getFullYear();
         const mm = String(today.getMonth() + 1).padStart(2, '0');
         const dd = String(today.getDate()).padStart(2, '0');
 
-        // Устанавливаем значение для второго календаря (текущая дата)
-        document.getElementById('date2').value = `${yyyy}-${mm}-${dd}`;
-
-        // Устанавливаем значение для первого календаря (3 года назад)
+        document.getElementById('endDate').value = `${yyyy}-${mm}-${dd}`;
         const pastYear = yyyy - 3;
-        document.getElementById('date1').value = `${pastYear}-${mm}-${dd}`;
+        document.getElementById('startDate').value = `${pastYear}-${mm}-${dd}`;
+
+        const categoryDropdown = document.getElementById('categoryDropdown');
+        const valueDropdown = document.getElementById('valueDropdown');
+
+        const options = {
+            fruit: ["Apple", "Banana", "Orange", "Grapes"],
+            animal: ["Dog", "Cat", "Elephant", "Lion"]
+        };
+
+        categoryDropdown.addEventListener('change', function () {
+            valueDropdown.innerHTML = '<option value="" disabled selected>Choose option 2</option>';
+            const selectedCategory = categoryDropdown.value;
+            options[selectedCategory].forEach(item => {
+                const option = document.createElement('option');
+                option.value = item.toLowerCase();
+                option.textContent = item;
+                valueDropdown.appendChild(option);
+            });
+            valueDropdown.disabled = false;
+        });
     </script>
 </body>
 </html>
+
+<script>
+    document.getElementById('draw-chart-button').addEventListener('click', function () {
+        const category = document.getElementById('categoryDropdown').value;
+        const value = document.getElementById('valueDropdown').value;
+        const start_date = document.getElementById('startDate').value
+        const end_date = document.getElementById('endDate').value;
+
+        if (!category || !value) {
+            alert('Пожалуйста, заполните оба поля!');
+            return;
+        }
+
+        if (isInvalidDate(start_date) || isInvalidDate(end_date)) {
+            alert('Неправильно указана дата!');
+            return;
+        }
+
+        if (start_date > end_date) {
+            alert('Начало интервала не может превосходить его конец!');
+            return;
+        }
+
+        if (end_date > today) {
+            alert('Конец интервала не может быть больше текущей даты!');
+            return;
+        }
+
+        const this_day_three_years_ago = new Date(pastYear, mm, dd);
+        if (start_date < this_day_three_years_ago) {
+            alert('Временной интервал от даты начала до даты конца не может превосходить 3 года!');
+            return;
+        }
+
+        const data = {
+            categoryDropdown: category,
+            valueDropdown: value,
+            start_date: start_date,
+            end_date: end_date,
+        };
+
+        fetch('/draw-chart', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(result => {
+            console.log(result);
+            alert('График построен успешно!');
+            // Здесь можно добавить логику для отображения графика
+        })
+        .catch(error => {
+            console.error('Ошибка:', error);
+            alert('Произошла ошибка при построении графика.');
+        });
+    });
+
+    function isInvalidDate(dateString) {
+        const date = new Date(dateString);
+        return isNaN(date.getTime());
+    }
+</script>
