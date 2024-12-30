@@ -38,6 +38,9 @@ class MOEXConnector:
     _bond_request: str = (
         "https://iss.moex.com/iss/history/engines/bonds/markets/shares/boards/TQBR/securities/"
     )
+    _currency_request: str = (
+        "https://iss.moex.com/iss/history/engines/currency/markets/selt/boards/CETS/securities/"
+    )
 
     def _create_request(self, request_body: str, attributes: MOEXRequestAttributes):
         from_date: date = attributes.get_start_date()
@@ -61,5 +64,10 @@ class MOEXConnector:
 
     def get_bonds(self, attributes: MOEXRequestAttributes):
         url = self._create_request(self._bond_request, attributes)
+        response = requests.get(url)
+        return response.json()
+
+    def get_currency(self, attributes: MOEXRequestAttributes):
+        url = self._create_request(self._currency_request, attributes)
         response = requests.get(url)
         return response.json()
