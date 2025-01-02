@@ -20,8 +20,8 @@ class MOEXConnector:
         def __init__(
             self,
             ticket: str,
-            from_date=datetime.today() - relativedelta(years=3),
-            till_date=datetime.today(),
+            from_date: date=datetime.today() - relativedelta(years=3),
+            till_date: date=datetime.today(),
         ):
             self._ticket = ticket
             self._from_date = from_date
