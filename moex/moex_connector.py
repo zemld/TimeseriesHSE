@@ -64,26 +64,31 @@ class MOEXConnector:
         )
         return url
 
+    def _is_response_correct(self, response):
+        if response.status_code != SUCCESS or response.text == "":
+            return False
+        return True
+    
     def get_actions(self, attributes: MOEXRequestAttributes):
         url = self._create_request(self._action_request, attributes)
         response = requests.get(url)
-        if response.status_code != SUCCESS:
-            return None
-        return response.json()
+        if self._is_response_correct(response):
+            return response.json()
+        return None
 
     def get_bonds(self, attributes: MOEXRequestAttributes):
         url = self._create_request(self._bond_request, attributes)
         response = requests.get(url)
-        if response.status_code != SUCCESS:
-            return None
-        return response.json()
+        if self._is_response_correct(response):
+            return response.json()
+        return None
 
     def get_currency(self, attributes: MOEXRequestAttributes):
         url = self._create_request(self._currency_request, attributes)
         response = requests.get(url)
-        if response.status_code != SUCCESS:
-            return None
-        return response.json()
+        if self._is_response_correct(response):
+            return response.json()
+        return None
     
     def get_part_of_data(self, type: RequestType, attributes: MOEXRequestAttributes):
         if (type == self.RequestType.ACTIONS):
@@ -102,7 +107,7 @@ class MOEXConnector:
             return None
         
         trade_date_index = columns.index("TRADEDATE")
-        value_index = columns.index("VALUE")
+        value_index = columns.index("WAPRICE")
 
         chosen_data = {}
         data = history_data.get("data", [])
