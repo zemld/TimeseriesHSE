@@ -7,8 +7,11 @@ SUCCESS = 200
 
 class MOEXConnector:
     # TODO Придумать, как реализовать определение тикета (возможно, сделать перечисление)
-    # TODO Добавить обработку ответа. Нужно получать лишь часть данных. Только временную метку и цену.
-    # Пререквизит - посмотреть структуру получаемых данных
+    class RequestType(Enum):
+        ACTIONS = 1
+        BONDS = 2
+        CURRENCY = 3
+
     class MOEXRequestAttributes:
         _ticket: str
         _from_date: date
@@ -81,3 +84,29 @@ class MOEXConnector:
         if response.status_code != SUCCESS:
             return None
         return response.json()
+    
+    def get_part_of_data(self, type: RequestType, attributes: MOEXRequestAttributes):
+        if (type == self.RequestType.ACTIONS):
+            response = self.get_actions(attributes)
+        elif (type == self.RequestType.BONDS):
+            response = self.get_bonds(attributes)
+        else:
+            response = self.get_currency(attributes)
+        
+        if response is None:
+            return None
+        
+        history_data = response.get("history", {})
+        columns = history_data.get("columns", [])
+        if not columns:
+            return None
+        
+        trade_date_index = columns.index("TRADEDATE")
+        value_index = columns.index("VALUE")
+
+        chosen_data = {}
+        data = history_data.get("data", [])
+        for record in data:
+            chosen_data[record[trade_date_index]] = record[value_index]
+
+        return chosen_data
