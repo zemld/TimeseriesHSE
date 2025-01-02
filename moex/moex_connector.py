@@ -3,8 +3,12 @@ from dateutil.relativedelta import relativedelta
 import requests
 from enum import Enum
 
+SUCCESS = 200
 
 class MOEXConnector:
+    # TODO Придумать, как реализовать определение тикета (возможно, сделать перечисление)
+    # TODO Добавить обработку ответа. Нужно получать лишь часть данных. Только временную метку и цену.
+    # Пререквизит - посмотреть структуру получаемых данных
     class MOEXRequestAttributes:
         _ticket: str
         _from_date: date
@@ -60,14 +64,20 @@ class MOEXConnector:
     def get_actions(self, attributes: MOEXRequestAttributes):
         url = self._create_request(self._action_request, attributes)
         response = requests.get(url)
+        if response.status_code != SUCCESS:
+            return None
         return response.json()
 
     def get_bonds(self, attributes: MOEXRequestAttributes):
         url = self._create_request(self._bond_request, attributes)
         response = requests.get(url)
+        if response.status_code != SUCCESS:
+            return None
         return response.json()
 
     def get_currency(self, attributes: MOEXRequestAttributes):
         url = self._create_request(self._currency_request, attributes)
         response = requests.get(url)
+        if response.status_code != SUCCESS:
+            return None
         return response.json()
