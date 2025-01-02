@@ -5,6 +5,7 @@ from enum import Enum
 
 SUCCESS = 200
 
+
 class MOEXConnector:
     # TODO Придумать, как реализовать определение тикета (возможно, сделать перечисление)
     class RequestType(Enum):
@@ -20,8 +21,8 @@ class MOEXConnector:
         def __init__(
             self,
             ticket: str,
-            from_date: date=datetime.today() - relativedelta(years=3),
-            till_date: date=datetime.today(),
+            from_date: date = datetime.today() - relativedelta(years=3),
+            till_date: date = datetime.today(),
         ):
             self._ticket = ticket
             self._from_date = from_date
@@ -68,7 +69,7 @@ class MOEXConnector:
         if response.status_code != SUCCESS or response.text == "":
             return False
         return True
-    
+
     def get_actions(self, attributes: MOEXRequestAttributes):
         url = self._create_request(self._action_request, attributes)
         response = requests.get(url)
@@ -89,23 +90,23 @@ class MOEXConnector:
         if self._is_response_correct(response):
             return response.json()
         return None
-    
+
     def get_part_of_data(self, type: RequestType, attributes: MOEXRequestAttributes):
-        if (type == self.RequestType.ACTIONS):
+        if type == self.RequestType.ACTIONS:
             response = self.get_actions(attributes)
-        elif (type == self.RequestType.BONDS):
+        elif type == self.RequestType.BONDS:
             response = self.get_bonds(attributes)
         else:
             response = self.get_currency(attributes)
-        
+
         if response is None:
             return None
-        
+
         history_data = response.get("history", {})
         columns = history_data.get("columns", [])
         if not columns:
             return None
-        
+
         trade_date_index = columns.index("TRADEDATE")
         value_index = columns.index("WAPRICE")
 
