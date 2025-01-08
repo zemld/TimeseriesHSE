@@ -100,12 +100,12 @@ class MOEXConnector:
             response = self.get_currency(attributes)
 
         if response is None:
-            return None
+            return {}
 
         history_data = response.get("history", {})
         columns = history_data.get("columns", [])
         if not columns:
-            return None
+            return {}
 
         trade_date_index = columns.index("TRADEDATE")
         value_index = columns.index("WAPRICE")
