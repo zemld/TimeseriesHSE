@@ -8,7 +8,6 @@ from unittest.mock import AsyncMock
 def connector():
     conn = dbc.DBConnector("host", 5432, "name", "user", "password")
     conn._pool = AsyncMock()
-    conn._check_and_create_connetion = AsyncMock()
     return conn
 
 
@@ -37,11 +36,10 @@ async def test_check_and_create_connetion_when_pool_exists(mocker, connector):
 # TODO: исправить тесты
 @pytest.mark.asyncio
 async def test_check_and_create_connetion_when_pool_does_not_exist(mocker, connector):
-    mocked_connect = AsyncMock()
-    connector.connect = mocked_connect
+    mock_connect = mocker.patch("db_connection.db_connector.DBConnector.connect")
     connector._pool = None
     await connector._check_and_create_connetion()
-    mocked_connect.assert_called_once()
+    mock_connect.assert_called_once()
 
 
 @pytest.mark.asyncio
