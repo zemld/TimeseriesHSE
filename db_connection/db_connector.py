@@ -17,8 +17,8 @@ class DBConnector:
         self._user = user
         self._password = password
 
-    def _chech_and_create_connetion(self) -> None:
-        if self.pool is None:
+    def _check_and_create_connetion(self) -> None:
+        if self._pool is None:
             self.connect()
 
     async def connect(self):
@@ -38,7 +38,7 @@ class DBConnector:
             print(f"Error with connection: {e}")
 
     async def create_table(self, table_name: str) -> None:
-        self._chech_and_create_connetion()
+        self._check_and_create_connetion()
         create_table_query = f"""
         CREATE TABLE IF NOT EXISTS {table_name} (
             date DATE PRIMARY KEY,
@@ -51,7 +51,7 @@ class DBConnector:
             print(f"Table {table_name} created.")
 
     async def insert_data(self, table_name: str, data: dict) -> None:
-        self._chech_and_create_connetion()
+        self._check_and_create_connetion()
         insert_query = f"INSERT INTO {table_name} (date, price) VALUES\n\t"
         values = ",\n\t".join([f"('{date}', {price})" for date, price in data.items()])
         insert_query += values + ";"
@@ -63,7 +63,7 @@ class DBConnector:
     async def select_data(
         self, table_name: str, from_date: str, till_date: str
     ) -> dict[date, float]:
-        self._chech_and_create_connetion()
+        self._check_and_create_connetion()
         select_query = f"SELECT * FROM {table_name} WHERE date BETWEEN '{from_date}' AND '{till_date}';"
 
         async with self._pool.acquire() as connection:
@@ -71,7 +71,7 @@ class DBConnector:
         return result
 
     async def delete_data(self, table_name: str, till_date: str) -> None:
-        self._chech_and_create_connetion()
+        self._check_and_create_connetion()
         delete_query = f"DELETE FROM {table_name} WHERE date <= '{till_date}';"
 
         async with self._pool.acquire() as connection:
