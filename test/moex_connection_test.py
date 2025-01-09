@@ -132,10 +132,8 @@ def test_empty_result_get_currency(mocker, currency_attributes):
 
 
 def test_get_part_of_data(mocker, actions_attributes):
-    mocked_response = mocker.patch("moex.moex_connector.requests.get")
-    mocked_response.return_value.status_code = 200
-    mocked_response.return_value.text = "Result text"
-    mocked_response.return_value.json.return_value = {
+    mocked_response = mocker.patch("moex.moex_connector.MOEXConnector.get_actions")
+    mocked_response.return_value = {
         "history": {
             "columns": ["TRADEDATE", "WAPRICE"],
             "data": [["2023-4-10", 2], ["2024-8-22", 4]],
@@ -145,24 +143,20 @@ def test_get_part_of_data(mocker, actions_attributes):
     assert CONNECTOR.get_part_of_data(
         mc.MOEXConnector.RequestType.ACTIONS, actions_attributes
     ) == {"2023-4-10": 2, "2024-8-22": 4}
-    mocked_response.assert_called_once_with(CONNECTOR._create_request(CONNECTOR._action_request, actions_attributes))
+    mocked_response.assert_called_once_with(actions_attributes)
 
 
 def test_get_part_of_data_incorrect_response(mocker, actions_attributes):
-    mocked_response = mocker.patch("moex.moex_connector.requests.get")
-    mocked_response.return_value.status_code = 200
-    mocked_response.return_value.text = ""
-    mocked_response.return_value.json.return_value = None
+    mocked_response = mocker.patch("moex.moex_connector.MOEXConnector.get_actions")
+    mocked_response.return_value = None
 
     assert CONNECTOR.get_part_of_data(mc.MOEXConnector.RequestType.ACTIONS, actions_attributes) == {}
-    mocked_response.assert_called_once_with(CONNECTOR._create_request(CONNECTOR._action_request, actions_attributes))
+    mocked_response.assert_called_once_with(actions_attributes)
 
 
 def test_get_part_of_data_empty(mocker, actions_attributes):
-    mocked_response = mocker.patch("moex.moex_connector.requests.get")
-    mocked_response.return_value.status_code = 200
-    mocked_response.return_value.text = "Result text"
+    mocked_response = mocker.patch("moex.moex_connector.MOEXConnector.get_actions")
     mocked_response.return_value.json.return_value = {}
 
     assert CONNECTOR.get_part_of_data(mc.MOEXConnector.RequestType.ACTIONS, actions_attributes) == {}
-    mocked_response.assert_called_once_with(CONNECTOR._create_request(CONNECTOR._action_request, actions_attributes))
+    mocked_response.assert_called_once_with(actions_attributes)
