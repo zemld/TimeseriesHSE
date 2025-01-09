@@ -27,14 +27,14 @@ async def test_connect(mocker, connector):
 
 @pytest.mark.asyncio
 async def test_check_and_create_connetion_when_pool_exists(mocker, connector):
-    mock = mocker.patch("db_connection.db_connector.DBConnector.connect")
+    mock_connect = mocker.patch("db_connection.db_connector.DBConnector.connect")
     await connector._check_and_create_connetion()
-    assert not mock.connect.called
+    assert not mock_connect.connect.called
 
 
 @pytest.mark.asyncio
 async def test_check_and_create_connetion_when_pool_does_not_exist(mocker, connector):
-    mock = mocker.patch("db_connection.db_connector.DBConnector.connect")
+    mock_connect = mocker.patch("db_connection.db_connector.DBConnector.connect")
     connector._pool = None
     await connector._check_and_create_connetion()
-    mock.assert_called_once()
+    mock_connect.assert_called_once()
