@@ -70,9 +70,7 @@ class DBConnector:
             result = await connection.fetch(select_query)
         return result
 
-    async def delete_data(
-        self, table_name: str, till_date: str
-    ) -> None:
+    async def delete_data(self, table_name: str, till_date: str) -> None:
         self._chech_and_create_connetion()
         delete_query = f"DELETE FROM {table_name} WHERE date <= '{till_date}';"
 
