@@ -61,7 +61,7 @@ class DBConnector:
             print(f"Data inserted into {table_name}.")
 
     async def select_data(
-        self, table_name: str, from_date: str, till_date: str
+        self, table_name: str, from_date: date, till_date: date
     ) -> dict[date, float]:
         self._check_and_create_connetion()
         select_query = f"SELECT * FROM {table_name} WHERE date BETWEEN '{from_date}' AND '{till_date}';"
@@ -70,7 +70,7 @@ class DBConnector:
             result = await connection.fetch(select_query)
         return result
 
-    async def delete_data(self, table_name: str, till_date: str) -> None:
+    async def delete_data(self, table_name: str, till_date: date) -> None:
         await self._check_and_create_connetion()
         delete_query = f"DELETE FROM {table_name} WHERE date <= '{till_date}';"
 
