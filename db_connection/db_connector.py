@@ -46,9 +46,12 @@ class DBConnector:
         );
         """
 
-        async with self._pool.acquire() as connection:
+        connection = await self._pool.acquire()
+        try:
             await connection.execute(create_table_query)
             print(f"Table {table_name} created.")
+        except Exception as e:
+            print(f"Error with creating table: {e}")
 
     async def insert_data(self, table_name: str, data: dict) -> None:
         await self._check_and_create_connetion()
@@ -56,9 +59,12 @@ class DBConnector:
         values = ",\n\t".join([f"('{date}', {price})" for date, price in data.items()])
         insert_query += values + ";"
 
-        async with self._pool.acquire() as connection:
+        connection = await self._pool.acquire()
+        try:
             await connection.execute(insert_query)
             print(f"Data inserted into {table_name}.")
+        except Exception as e:
+            print(f"Error with inserting data: {e}")
 
     async def select_data(
         self, table_name: str, from_date: date, till_date: date
@@ -66,14 +72,23 @@ class DBConnector:
         self._check_and_create_connetion()
         select_query = f"SELECT * FROM {table_name} WHERE date BETWEEN '{from_date}' AND '{till_date}';"
 
-        async with self._pool.acquire() as connection:
-            result = await connection.fetch(select_query)
+        connection = await self._pool.acquire()
+        try:
+            rows = await connection.fetch(select_query)
+        except Exception as e:
+            print(f"Error with selecting data: {e}")
+            rows = []
+
+        result = {row["date"]: row["price"] for row in rows}
         return result
 
     async def delete_data(self, table_name: str, till_date: date) -> None:
         await self._check_and_create_connetion()
         delete_query = f"DELETE FROM {table_name} WHERE date <= '{till_date}';"
 
-        async with self._pool.acquire() as connection:
+        connection = await self._pool.acquire()
+        try:
             await connection.execute(delete_query)
             print(f"Data deleted from {table_name}.")
+        except Exception as e:
+            print(f"Error with deleting data: {e}")
