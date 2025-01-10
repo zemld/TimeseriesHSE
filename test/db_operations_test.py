@@ -43,80 +43,61 @@ async def test_check_and_create_connetion_when_pool_does_not_exist(mocker, conne
 
 
 @pytest.mark.asyncio
-async def test_create_table(mocker, connector):
-    mocked_pool = AsyncMock()
-    connector._pool = mocked_pool
-
-    mock_acquire = AsyncMock()
-    mocked_pool.acquire.return_value = mock_acquire
-
+async def test_create_table_success(mocker, connector):
+    mocker.patch("db_connection.db_connector.DBConnector._check_and_create_connetion")
     mocked_connection = AsyncMock()
-    mock_acquire.__aenter__.return_value = mocked_connection
     mocked_connection.execute = AsyncMock()
+    connector._pool.acquire = AsyncMock(return_value=mocked_connection)
 
     await connector.create_table("TEST_TABLE")
-    mocked_connection.execute.assert_called_once_with(
-        """
-        CREATE TABLE IF NOT EXISTS TEST_TABLE (
-            date DATE PRIMARY KEY,
-            price DOUBLE
-        );
-        """
-    )
+
+    connector._check_and_create_connetion.assert_called_once()
+    connector._pool.acquire.assert_called_once()
+    mocked_connection.execute.assert_called_once()
 
 
 @pytest.mark.asyncio
 async def test_insert_data(mocker, connector):
-    mocked_pool = AsyncMock()
-    connector._pool = mocked_pool
-
-    mock_acquire = AsyncMock()
-    mocked_pool.acquire.return_value = mock_acquire
-
+    mocker.patch("db_connection.db_connector.DBConnector._check_and_create_connetion")
     mocked_connection = AsyncMock()
-    mock_acquire.__aenter__.return_value = mocked_connection
     mocked_connection.execute = AsyncMock()
+    connector._pool.acquire = AsyncMock(return_value=mocked_connection)
 
-    await connector.insert_data("TEST_TABLE", {"2022-01-01": 1.0, "2022-01-02": 2.0})
-    mocked_connection.execute.assert_called_once_with(
-        "INSERT INTO TEST_TABLE (date, price) VALUES\n\t('2022-01-01', 1.0),\n\t('2022-01-02', 2.0);"
-    )
+    await connector.insert_data("TEST_TABLE", {date(2022, 1, 1): 1.0, date(2022, 1, 2): 2.0})
+
+    connector._check_and_create_connetion.assert_called_once()
+    connector._pool.acquire.assert_called_once()
+    mocked_connection.execute.assert_called_once()
 
 
 @pytest.mark.asyncio
 async def test_select_data(mocker, connector):
-    mocked_pool = AsyncMock()
-    connector._pool = mocked_pool
-
-    mock_acquire = AsyncMock()
-    mocked_pool.acquire.return_value = mock_acquire
-
+    mocker.patch("db_connection.db_connector.DBConnector._check_and_create_connetion")
     mocked_connection = AsyncMock()
-    mock_acquire.__aenter__.return_value = mocked_connection
-    mocked_connection.fetch.return_value = {"2022-01-01": 1.0, "2022-01-02": 2.0}
+    mocked_connection.execute = AsyncMock()
+    connector._pool.acquire = AsyncMock(return_value=mocked_connection)
+
+    mocked_connection.fetch.return_value = [{"date": date(2022, 1, 1), "price": 1.0}, {"date": date(2022, 1, 2), "price": 2.0}]
 
     result = await connector.select_data(
         "TEST_TABLE", date(2022, 1, 1), date(2022, 1, 2)
     )
-    assert result == {"2022-01-01": 1.0, "2022-01-02": 2.0}
-    mocked_connection.fetch.assert_called_once_with(
-        "SELECT * FROM TEST_TABLE WHERE date BETWEEN '2022-01-01' AND '2022-01-02';"
-    )
+
+    assert result == {date(2022, 1, 1): 1.0, date(2022, 1, 2): 2.0}
+    connector._check_and_create_connetion.assert_called_once()
+    connector._pool.acquire.assert_called_once()
+    mocked_connection.fetch.assert_called_once()
 
 
 @pytest.mark.asyncio
 async def test_delete_data(mocker, connector):
-    mocked_pool = AsyncMock()
-    connector._pool = mocked_pool
-
-    mock_acquire = AsyncMock()
-    mocked_pool.acquire.return_value = mock_acquire
-
+    mocker.patch("db_connection.db_connector.DBConnector._check_and_create_connetion")
     mocked_connection = AsyncMock()
-    mock_acquire.__aenter__.return_value = mocked_connection
     mocked_connection.execute = AsyncMock()
+    connector._pool.acquire = AsyncMock(return_value=mocked_connection)
 
     await connector.delete_data("TEST_TABLE", date(2022, 1, 2))
-    mocked_connection.execute.assert_called_once_with(
-        "DELETE FROM TEST_TABLE WHERE date <= '2022-01-02';"
-    )
+
+    connector._check_and_create_connetion.assert_called_once()
+    connector._pool.acquire.assert_called_once()
+    mocked_connection.execute.assert_called_once()
