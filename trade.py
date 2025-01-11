@@ -1,6 +1,6 @@
 from datetime import date
 
-class Record:
+class Trade:
     _trade_date: date
     _price: float
 
