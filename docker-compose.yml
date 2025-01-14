@@ -2,7 +2,7 @@ services:
   webapp:
     build:
       context: .
-      dockerfile: docker/Dockerfile
+      dockerfile: Dockerfile
     ports:
       - "8000:5000"
     
