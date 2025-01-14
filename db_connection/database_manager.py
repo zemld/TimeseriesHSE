@@ -2,7 +2,7 @@ import asyncpg
 from datetime import date
 
 
-class DBConnector:
+class DatabaseManager:
     _host: str
     _port: int
     _name: str
