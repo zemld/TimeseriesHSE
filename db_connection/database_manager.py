@@ -16,10 +16,11 @@ class DatabaseManager:
         self._name = name
         self._user = user
         self._password = password
+        self._pool = None
 
     async def _check_and_create_connetion(self) -> None:
         if self._pool is None:
-            self.connect()
+            await self.connect()
 
     async def connect(self):
         try:
@@ -42,7 +43,7 @@ class DatabaseManager:
         create_table_query = f"""
         CREATE TABLE IF NOT EXISTS {table_name} (
             date DATE PRIMARY KEY,
-            price DOUBLE
+            price DOUBLE PRECISION
         );
         """
 
@@ -56,7 +57,7 @@ class DatabaseManager:
     async def insert_data(self, table_name: str, data: dict) -> None:
         await self._check_and_create_connetion()
         insert_query = f"INSERT INTO {table_name} (date, price) VALUES\n\t"
-        values = ",\n\t".join([f"('{date}', {price})" for date, price in data.items()])
+        values = ",\n\t".join([f"('{date}', {price if price is not None else "null"})" for date, price in data.items()])
         insert_query += values + ";"
 
         connection = await self._pool.acquire()
