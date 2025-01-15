@@ -5,6 +5,8 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8000:5000"
+    volumes:
+      - .:/app
     
   db:
     image: timescale/timescaledb:latest-pg17
