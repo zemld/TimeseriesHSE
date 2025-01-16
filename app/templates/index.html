@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -15,6 +16,7 @@
             height: 100vh;
             background-color: #f9f9f9;
         }
+
         .form-container {
             display: flex;
             flex-direction: column;
@@ -26,7 +28,10 @@
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             background-color: #fff;
         }
-        select, input[type="date"], button {
+
+        select,
+        input[type="date"],
+        button {
             width: 220px;
             padding: 10px;
             font-size: 16px;
@@ -35,10 +40,13 @@
             border-radius: 5px;
             transition: border-color 0.2s ease-in-out;
         }
-        select:focus, input[type="date"]:focus {
+
+        select:focus,
+        input[type="date"]:focus {
             border-color: #007bff;
             outline: none;
         }
+
         button {
             cursor: pointer;
             background-color: #007bff;
@@ -46,11 +54,13 @@
             border: none;
             font-weight: bold;
         }
+
         button:hover {
             background-color: #0056b3;
         }
     </style>
 </head>
+
 <body>
     <div class="form-container">
         <select id="categoryDropdown">
@@ -72,16 +82,27 @@
         const mm = String(today.getMonth() + 1).padStart(2, '0');
         const dd = String(today.getDate()).padStart(2, '0');
 
-        document.getElementById('endDate').value = `${yyyy}-${mm}-${dd}`;
         const pastYear = yyyy - 3;
-        document.getElementById('startDate').value = `${pastYear}-${mm}-${dd}`;
+        const minDate = `${pastYear}-${mm}-${dd}`;
+        const currentDate = `${yyyy}-${mm}-${dd}`;
+
+        const startDateInput = document.getElementById('startDate');
+        const endDateInput = document.getElementById('endDate');
+
+        startDateInput.min = minDate;
+        startDateInput.max = currentDate;
+        startDateInput.value = minDate;
+
+        endDateInput.min = minDate;
+        endDateInput.max = currentDate;
+        endDateInput.value = currentDate;
 
         const categoryDropdown = document.getElementById('categoryDropdown');
         const valueDropdown = document.getElementById('valueDropdown');
 
         const options = {
             акция: ["Сбер", "Газпром", "Лукойл", "Роснефть", "Яндекс", "Аэрофлот", "МТС", "НЛМК", "Полюс", "Татнефть", "Норникель", "Магнит"],
-            облигация: ["Сбер", "Газпром", "Лукойн", "Роснефть", "Новатэк"],
+            облигация: ["Сбер", "Газпром", "Лукойл", "Роснефть", "Новатэк"],
             валюта: ["Доллар", "Евро", "Юань", "Швейцарский франк", "Фунт", "Йена", "Беларусский рубль", "Турецкая лира", "Тенге"]
         };
 
@@ -100,8 +121,8 @@
         document.getElementById('draw-chart-button').addEventListener('click', function () {
             const category = categoryDropdown.value;
             const value = valueDropdown.value;
-            const start_date = document.getElementById('startDate').value;
-            const end_date = document.getElementById('endDate').value;
+            const start_date = startDateInput.value;
+            const end_date = endDateInput.value;
 
             if (!category || !value) {
                 alert('Пожалуйста, заполните оба поля!');
@@ -110,6 +131,19 @@
 
             if (start_date > end_date) {
                 alert('Начало интервала не может превосходить его конец!');
+                return;
+            }
+
+            const startDate = new Date(start_date);
+            const minAllowedDate = new Date(minDate);
+            if (startDate < minAllowedDate) {
+                alert('Начало интервала не может отличаться от текущей даты больше, чем на 3 года!');
+                return;
+            }
+
+            const endDate = new Date(end_date);
+            if (endDate > today) {
+                alert('Конец интервала не может превышать текущую дату!');
                 return;
             }
 
@@ -127,19 +161,20 @@
                 },
                 body: JSON.stringify(data)
             })
-            .then(response => response.json())
-            .then(data => {
-                if (data.redirect) {
-                    window.location.href = data.redirect;
-                } else if (data.error) {
-                    alert('Ошибка: ' + data.error);
-                }
-            })
-            .catch(error => {
-                console.error('Ошибка:', error);
-                alert('Произошла ошибка при построении графика.');
-            });
+                .then(response => response.json())
+                .then(data => {
+                    if (data.redirect) {
+                        window.location.href = data.redirect;
+                    } else if (data.error) {
+                        alert('Ошибка: ' + data.error);
+                    }
+                })
+                .catch(error => {
+                    console.error('Ошибка:', error);
+                    alert('Произошла ошибка при построении графика.');
+                });
         });
     </script>
 </body>
+
 </html>
