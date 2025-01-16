@@ -55,9 +55,9 @@
     <div class="form-container">
         <select id="categoryDropdown">
             <option value="" disabled selected>Выберите категорию</option>
-            <option value="fruit">Fruits</option>
-            <option value="animal">Animals</option>
-            <option value="vehicle">Vehicles</option>
+            <option value="акция">Акции</option>
+            <option value="облигация">Облигации</option>
+            <option value="валюта">Валюты</option>
         </select>
         <select id="valueDropdown" disabled>
             <option value="" disabled selected>Выберите значение категории</option>
@@ -80,9 +80,9 @@
         const valueDropdown = document.getElementById('valueDropdown');
 
         const options = {
-            fruit: ["Apple", "Banana", "Orange"],
-            animal: ["Dog", "Cat", "Elephant"],
-            vehicle: ["Car", "Bike", "Truck"]
+            акция: ["Сбер", "Газпром", "Лукойл", "Роснефть", "Яндекс", "Аэрофлот", "МТС", "НЛМК", "Полюс", "Татнефть", "Норникель", "Магнит"],
+            облигация: ["Сбер", "Газпром", "Лукойн", "Роснефть", "Новатэк"],
+            валюта: ["Доллар", "Евро", "Юань", "Швейцарский франк", "Фунт", "Йена", "Беларусский рубль", "Турецкая лира", "Тенге"]
         };
 
         categoryDropdown.addEventListener('change', function () {
