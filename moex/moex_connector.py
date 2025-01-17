@@ -1,4 +1,5 @@
-from moex_request import MoexRequest
+from moex_request import MoexRequest, MoexActionRequest
+from datetime import date, datetime
 import requests
 
 SUCCESS = 200
@@ -38,6 +39,9 @@ class MoexConnector:
         for data in data_as_jsons:
             records = data.get("history").get("data")
             for record in records:
-                trades[record[tradedate_index]] = record[waprice_index]
+                record_date = datetime.strptime(
+                    record[tradedate_index], "%Y-%m-%d"
+                ).date()
+                trades[record_date] = record[waprice_index]
 
         return trades
