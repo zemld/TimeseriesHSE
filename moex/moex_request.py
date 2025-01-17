@@ -57,9 +57,8 @@ class MoexActionRequest(MoexRequest):
         urls = super().get_request_urls()
         for i in range(len(urls)):
             urls[i] = self._action_request + urls[i]
-        
+
         return urls
-        
 
 
 class MoexBondRequest(MoexRequest):
@@ -71,7 +70,7 @@ class MoexBondRequest(MoexRequest):
         urls = super().get_request_urls()
         for i in range(len(urls)):
             urls[i] = self._bond_request + urls[i]
-        
+
         return urls
 
 
@@ -84,5 +83,5 @@ class MoexCurrencyRequest(MoexRequest):
         urls = super().get_request_urls()
         for i in range(len(urls)):
             urls[i] = self._currency_request + urls[i]
-        
+
         return urls

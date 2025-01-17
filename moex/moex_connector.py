@@ -20,7 +20,6 @@ class MoexConnector:
 
         return data
 
-    
     def fetch_data(self, attributes: MoexRequest):
         data_as_jsons = self._get_data(attributes)
 
@@ -31,7 +30,7 @@ class MoexConnector:
         columns = history_data.get("columns", [])
         if not columns:
             return {}
-        
+
         tradedate_index = columns.index("TRADEDATE")
         waprice_index = columns.index("WAPRICE")
 
