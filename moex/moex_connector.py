@@ -1,4 +1,4 @@
-from moex_request import MoexRequest
+from moex.moex_request import MoexRequest
 from datetime import datetime
 import requests
 
