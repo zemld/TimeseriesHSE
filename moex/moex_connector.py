@@ -1,5 +1,5 @@
-from moex_request import MoexRequest, MoexActionRequest
-from datetime import date, datetime
+from moex_request import MoexRequest
+from datetime import datetime
 import requests
 
 SUCCESS = 200
