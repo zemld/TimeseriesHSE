@@ -70,7 +70,7 @@ class DatabaseManager:
     async def select_data(
         self, table_name: str, from_date: date, till_date: date
     ) -> dict[date, float]:
-        self._check_and_create_connetion()
+        await self._check_and_create_connetion()
         select_query = f"SELECT * FROM {table_name} WHERE date BETWEEN '{from_date}' AND '{till_date}';"
 
         connection = await self._pool.acquire()
