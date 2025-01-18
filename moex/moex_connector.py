@@ -1,4 +1,4 @@
-from moex.moex_request import MoexRequest
+from moex.moex_request import MoexRequestAttributes
 from datetime import datetime
 import requests
 
@@ -11,7 +11,7 @@ class MoexConnector:
             return False
         return True
 
-    def _get_data(self, attributes: MoexRequest):
+    def _get_data(self, attributes: MoexRequestAttributes):
         urls = attributes.get_request_urls()
         data = []
         for url in urls:
@@ -21,7 +21,7 @@ class MoexConnector:
 
         return data
 
-    def fetch_data(self, attributes: MoexRequest):
+    def fetch_data(self, attributes: MoexRequestAttributes):
         data_as_jsons = self._get_data(attributes)
 
         if not data_as_jsons:
