@@ -1,30 +1,26 @@
 from datetime import date
 from pytest import fixture
-from moex.moex_request import (
-    MoexActionRequest,
-    MoexBondRequest,
-    MoexCurrencyRequest,
-)
+from moex.moex_request import MoexRequestAttributes
 
 
 @fixture
 def actions_request():
-    return MoexActionRequest(
-        ticker="SBER", from_date=date(2023, 4, 3), till_date=date(2024, 8, 22)
+    return MoexRequestAttributes(
+        category="stock", ticker="SBER", from_date=date(2023, 4, 3), till_date=date(2024, 8, 22)
     )
 
 
 @fixture
 def bonds_request():
-    return MoexBondRequest(
-        ticker="RU000A0ZZZ01", from_date=date(2023, 4, 3), till_date=date(2024, 8, 22)
+    return MoexRequestAttributes(
+        category="bonds", ticker="RU000A0ZZZ01", from_date=date(2023, 4, 3), till_date=date(2024, 8, 22)
     )
 
 
 @fixture
 def currency_request():
-    return MoexCurrencyRequest(
-        ticker="USD_RUB", from_date=date(2023, 4, 3), till_date=date(2024, 8, 22)
+    return MoexRequestAttributes(
+        category="currency", ticker="USD_RUB", from_date=date(2023, 4, 3), till_date=date(2024, 8, 22)
     )
 
 
@@ -56,6 +52,7 @@ def test_get_request_urls(actions_request, bonds_request, currency_request):
     bond_urls = bonds_request.get_request_urls()
     currency_urls = currency_request.get_request_urls()
 
+    # Проверяем первый URL для каждой категории
     assert action_urls[0] == (
         "https://iss.moex.com/iss/history/engines/stock/markets/shares/boards/TQBR/securities/"
         "SBER.json?from=2023-4-3&till=2024-8-22&iss.meta=off"
@@ -65,6 +62,6 @@ def test_get_request_urls(actions_request, bonds_request, currency_request):
         "RU000A0ZZZ01.json?from=2023-4-3&till=2024-8-22&iss.meta=off"
     )
     assert currency_urls[0] == (
-        "https://iss.moex.com/iss/history/engines/currency/markets/selt/boards/CETS/securities/"
+        "https://iss.moex.com/iss/history/engines/currency/markets/shares/boards/TQBR/securities/"
         "USD_RUB.json?from=2023-4-3&till=2024-8-22&iss.meta=off"
     )
