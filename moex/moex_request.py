@@ -37,7 +37,8 @@ class MoexRequestAttributes:
         return f"{date.year}-{date.month}-{date.day}"
 
     def get_url_body(self) -> str:
-        return f"https://iss.moex.com/iss/history/engines/{self.get_category()}/markets/shares/boards/TQBR/securities/"
+        category: str = self.get_category()
+        return f"https://iss.moex.com/iss/history/engines/{category}/markets/shares/boards/{"CETS" if category == "currency" else "TQBR"}/securities/"
 
     def get_request_urls(self):
         url_body = self.get_url_body()
