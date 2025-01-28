@@ -1,5 +1,6 @@
 import asyncpg
 from datetime import date
+from logger import Logger
 
 
 class DatabaseManager:
@@ -9,6 +10,7 @@ class DatabaseManager:
     _user: str
     _password: str
     _pool: asyncpg.Pool
+    _logger: Logger
 
     def __init__(self, host: str, port: int, name: str, user: str, password: str):
         self._host = host
@@ -17,9 +19,11 @@ class DatabaseManager:
         self._user = user
         self._password = password
         self._pool = None
+        self._logger = Logger("db")
 
     async def _check_and_create_connetion(self) -> None:
         if self._pool is None:
+            self._logger.debug("Connection renewed.")
             await self.connect()
 
     async def connect(self):
@@ -33,10 +37,9 @@ class DatabaseManager:
                 min_size=1,
                 max_size=10,
             )
-            # TODO: добавить логгер.
-            print("Connection created.")
+            self._logger.debug("Connection created.")
         except Exception as e:
-            print(f"Error with connection: {e}")
+            self._logger.error(f"Error with connection: {e}")
 
     async def create_table(self, table_name: str) -> None:
         await self._check_and_create_connetion()
@@ -50,9 +53,9 @@ class DatabaseManager:
         connection = await self._pool.acquire()
         try:
             await connection.execute(create_table_query)
-            print(f"Table {table_name} created.")
+            self._logger.info(f"Table {table_name} created.")
         except Exception as e:
-            print(f"Error with creating table: {e}")
+            self._logger.error(f"Error with creating table: {e}")
 
     async def insert_data(self, table_name: str, data: dict) -> None:
         await self._check_and_create_connetion()
@@ -63,9 +66,9 @@ class DatabaseManager:
         connection = await self._pool.acquire()
         try:
             await connection.execute(insert_query)
-            print(f"Data inserted into {table_name}.")
+            self._logger.info(f"Data inserted into {table_name}.")
         except Exception as e:
-            print(f"Error with inserting data: {e}")
+            self._logger.error(f"Error with inserting data: {e}")
 
     async def select_data(
         self, table_name: str, from_date: date, till_date: date
@@ -76,8 +79,9 @@ class DatabaseManager:
         connection = await self._pool.acquire()
         try:
             rows = await connection.fetch(select_query)
+            self._logger.info(f"Got data: {rows}")
         except Exception as e:
-            print(f"Error with selecting data: {e}")
+            self._logger.error(f"Error with selecting data: {e}")
             rows = []
 
         result = {row["date"]: row["price"] for row in rows}
@@ -90,6 +94,6 @@ class DatabaseManager:
         connection = await self._pool.acquire()
         try:
             await connection.execute(delete_query)
-            print(f"Data deleted from {table_name}.")
+            self._logger.info(f"Data deleted from {table_name}.")
         except Exception as e:
-            print(f"Error with deleting data: {e}")
+            self._logger.error(f"Error with deleting data: {e}")

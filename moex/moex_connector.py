@@ -1,14 +1,23 @@
 from moex.moex_request import MoexRequestAttributes
 from datetime import datetime
+from logger import Logger
 import requests
 
 SUCCESS = 200
 
 
 class MoexConnector:
+    _logger: Logger
+
+    def __init__(self):
+        self._logger = Logger("moex")
+
     def _is_response_correct(self, response):
         if response.status_code != SUCCESS or response.text == "":
+            self._logger.debug("Response is incorrect.")
             return False
+        
+        self._logger.debug("Response is correct.")
         return True
 
     def _get_data(self, attributes: MoexRequestAttributes):
@@ -19,17 +28,20 @@ class MoexConnector:
             if self._is_response_correct(response):
                 data.append(response.json())
 
+        self._logger.info(f"Collected data: {data}.")
         return data
 
     def fetch_data(self, attributes: MoexRequestAttributes):
         data_as_jsons = self._get_data(attributes)
 
         if not data_as_jsons:
+            self._logger.info("No data fetched.")
             return {}
 
         history_data = data_as_jsons[0].get("history", {})
         columns = history_data.get("columns", [])
         if not columns:
+            self._logger.info("No data fetched.")
             return {}
 
         tradedate_index = columns.index("TRADEDATE")
@@ -44,4 +56,5 @@ class MoexConnector:
                 ).date()
                 trades[record_date] = record[waprice_index]
 
+        self._logger.info("Fetched data: {trades}")
         return trades
