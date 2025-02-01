@@ -59,5 +59,5 @@ class MoexRequestAttributes:
             )
             urls.append(url)
             start_date += relativedelta(days=self._RECORDS_PER_REQUEST)
-        self._logger.debug(f"Created {urls.count()} url(s) for request: {urls}")
+        self._logger.debug(f"Created {len(urls)} url(s) for request: {urls}")
         return urls
