@@ -1,8 +1,8 @@
 services:
-  webapp:
+  app:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: app/Dockerfile
     ports:
       - "8000:5050"
     volumes:
@@ -18,6 +18,13 @@ services:
       POSTGRES_PASSWORD: secret
       POSTGRES_USER: user
       POSTGRES_DB: db
+
+  data_updater:
+    build:
+      context: .
+      dockerfile: data_updater/Dockerfile
+    volumes:
+      - .:/data_updater
 
 volumes:
   timeseries_data:
