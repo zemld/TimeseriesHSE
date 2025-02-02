@@ -16,26 +16,30 @@ class DataUpdater:
     def get_attributes(self) -> List[MoexRequestAttributes]:
         return [MoexRequestAttributes("stock", ticker) for ticker in self._tickers]
 
-    async def update_data(self, attribute: MoexRequestAttributes):
+    def _get_data(self, attribute: MoexRequestAttributes) -> dict:
         mc = MoexConnector()
-        db = DatabaseManager("db", 5432, "db", "user", "secret")
         data = mc.fetch_data(attribute)
-        if not data:
-            self._logger.info(f"No data fetched for {attribute.get_ticker()}.")
-            return
-        table_name = attribute.get_ticker()
+        return data
+
+    async def connect_to_db_and_update_data(self, table: str, data: dict):
+        db = DatabaseManager("db", 5432, "db", "user", "secret")
         await db.connect()
         await db.start_transaction()
         try:
-            await db.create_table(table_name)
+            await db.create_table(table)
             # self._logger.debug("deletion")
             # await db.delete_data(table_name, attribute.get_from_date())
             self._logger.debug("insertion")
-            await db.insert_data(table_name, data)
+            await db.insert_data(table, data)
         except Exception as e:
             self._logger.error(f"Error: {e}")
             await db.rollback_transaction()
         await db.end_transaction()
+
+    async def update_data(self, attribute: MoexRequestAttributes):
+        data = self._get_data(attribute)
+        table_name = attribute.get_ticker()
+        await self.connect_to_db_and_update_data(table_name, data)
         self._logger.info(f"Data for {attribute.get_ticker()} updated.")
 
     async def update_all_data(self):
