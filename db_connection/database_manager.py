@@ -41,6 +41,36 @@ class DatabaseManager:
         except Exception as e:
             self._logger.error(f"Error with connection: {e}")
 
+    async def start_transaction(self) -> None:
+        await self._check_and_create_connetion()
+        transaction_query = "BEGIN TRANSACTION ISOLATION LEVEL SERIALIZABLE;"
+        connection = await self._pool.acquire()
+        try:
+            await connection.execute(transaction_query)
+            self._logger.info("Transaction started.")
+        except Exception as e:
+            self._logger.error(f"Error with starting transaction: {e}")
+
+    async def rollback_transaction(self) -> None:
+        await self._check_and_create_connetion()
+        transaction_query = "ROLLBACK;"
+        connection = await self._pool.acquire()
+        try:
+            await connection.execute(transaction_query)
+            self._logger.info("Transaction rolled back.")
+        except Exception as e:
+            self._logger.error(f"Error with rolling back transaction: {e}")
+
+    async def end_transaction(self) -> None:
+        await self._check_and_create_connetion()
+        transaction_query = "COMMIT;"
+        connection = await self._pool.acquire()
+        try:
+            await connection.execute(transaction_query)
+            self._logger.info("Transaction ended.")
+        except Exception as e:
+            self._logger.error(f"Error with ending transaction: {e}")
+
     async def create_table(self, table_name: str) -> None:
         await self._check_and_create_connetion()
         create_table_query = f"""
