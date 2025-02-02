@@ -1,6 +1,7 @@
 from enum import Enum
 
-
+# Выяснилось, что нормально работают только акции. Облигации вообще странно, потому что у них есть срок годности.
+# А с валютами просто какая-то хрень. Их не удается нормально получать
 class ActionTickers(Enum):
     Sber = "SBER"
     Gazprom = "GAZP"
@@ -25,12 +26,12 @@ class BondTickers(Enum):
 
 
 class CurrencyTickers(Enum):
-    Dollar = "USD_RUB"
+    Dollar = "USDRUB"
     Euro = "EUR_RUB"
     Yuan = "CNY_RUB"
     Franc = "CHF_RUB"
     Pound = "GPB_RUB"
-    Yen = "JPY_RUB"
+    Yen = "JPYRUB"
     BRub = "BYN_RUB"
     Lira = "TRY_RUB"
     Tenge = "KZT_RUB"
@@ -38,7 +39,6 @@ class CurrencyTickers(Enum):
 
 def action_value_to_enum(action: str):
     action = action.lower()
-    enum_value: ActionTickers
     if action == "сбер":
         return ActionTickers.Sber
     if action == "газпром":
@@ -69,7 +69,6 @@ def action_value_to_enum(action: str):
 
 def bond_value_to_enum(bond: str):
     bond = bond.lower()
-    enum_value: BondTickers
     if bond == "сбер":
         return BondTickers.Sber
     if bond == "газпром":
@@ -86,7 +85,6 @@ def bond_value_to_enum(bond: str):
 
 def currency_value_to_enum(currency: str):
     currency = currency.lower()
-    enum_value: CurrencyTickers
     if currency == "доллар":
         return CurrencyTickers.Dollar
     if currency == "евро":
@@ -107,3 +105,7 @@ def currency_value_to_enum(currency: str):
         return CurrencyTickers.Tenge
 
     raise ValueError(f"Unknown currency: {currency}")
+
+
+def get_all_action_tickers():
+    return [ticker.value for ticker in ActionTickers]
