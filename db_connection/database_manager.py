@@ -22,8 +22,8 @@ class DatabaseManager:
         self._logger = Logger("db")
 
     async def _check_and_create_connetion(self) -> None:
+        self._logger.debug("chechking connection")
         if self._pool is None:
-            self._logger.debug("Connection renewed.")
             await self.connect()
 
     async def connect(self):
@@ -60,8 +60,13 @@ class DatabaseManager:
     async def insert_data(self, table_name: str, data: dict) -> None:
         await self._check_and_create_connetion()
         insert_query = f"INSERT INTO {table_name} (date, price) VALUES\n\t"
-        values = ",\n\t".join([f"('{date}', {price if price is not None else "null"})" for date, price in data.items()])
-        insert_query += values + ";"
+        values = ",\n\t".join(
+            [
+                f"('{date}', {price if price is not None else "null"})"
+                for date, price in data.items()
+            ]
+        )
+        insert_query += values + "\nON CONFLICT (date) DO NOTHING;"
 
         connection = await self._pool.acquire()
         try:
