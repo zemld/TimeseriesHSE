@@ -28,7 +28,7 @@ class MoexConnector:
             if self._is_response_correct(response):
                 data.append(response.json())
 
-        self._logger.info(f"Collected data: {data}.")
+        self._logger.info(f"Collected data.")
         return data
 
     def fetch_data(self, attributes: MoexRequestAttributes):
@@ -56,5 +56,5 @@ class MoexConnector:
                 ).date()
                 trades[record_date] = record[waprice_index]
 
-        self._logger.info("Fetched data: {trades}")
+        self._logger.info(f"Fetched data: {trades}")
         return trades
