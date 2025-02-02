@@ -8,4 +8,4 @@ COPY logger.py .
 COPY tickers.py .
 ENV PYTHONPATH="/updater"
 RUN pip install --no-cache-dir -r data_updater/requirements.txt
-CMD ["python", ""]
+CMD ["python", "data_updater/data_updater.py"]
