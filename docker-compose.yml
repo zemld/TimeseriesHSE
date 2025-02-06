@@ -1,13 +1,19 @@
 services:
-  app:
-    build:
-      context: .
-      dockerfile: app/Dockerfile
+
+  web_service:
+    build: services/web
     ports:
-      - "8000:5050"
+      - "8000:8000"
     volumes:
-      - .:/app
-    
+      - services/web:/web
+
+  moex_service:
+    build: services/moex
+    ports:
+      - "8001:8001"
+    volumes:
+      - services/moex:/moex
+
   db:
     image: timescale/timescaledb:latest-pg17
     ports:
@@ -19,12 +25,24 @@ services:
       POSTGRES_USER: user
       POSTGRES_DB: db
 
-  data_updater:
-    build:
-      context: .
-      dockerfile: data_updater/Dockerfile
+  db_service:
+    build: services/db
+    ports:
+      - "8002:8002"
     volumes:
-      - .:/data_updater
+      - /services/db:/db_service
+    depends_on:
+      - db
+
+  updater_service:
+    build: services/updater
+    ports:
+      - "8003:8003"
+    volumes:
+      - services/updater:/updater
+    depends_on:
+      - moex_service
+      - db_service
 
 volumes:
   timeseries_data:
