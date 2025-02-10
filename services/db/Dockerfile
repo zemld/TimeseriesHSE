@@ -3,4 +3,4 @@ WORKDIR /db_service
 COPY . .
 ENV PYTHONPATH="/db_service"
 RUN pip install --no-cache-dir -r requirements.txt
-CMD ["uvicorn", "main:db_manager", "--port=8002"]
+CMD ["uvicorn", "main:db_manager", "--host=0.0.0.0", "--port=8002"]

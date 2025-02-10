@@ -3,4 +3,4 @@ WORKDIR /web
 COPY . .
 ENV PYTHONPATH="/web"
 RUN pip install --no-cache-dir -r requirements.txt
-CMD ["uvicorn", "main:webapp", "--port=8000"]
+CMD ["uvicorn", "main:webapp", "--host=0.0.0.0", "--port=8000"]
