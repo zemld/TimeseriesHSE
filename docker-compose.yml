@@ -5,14 +5,14 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - services/web:/web
+      - ./services/web:/web
 
   moex_service:
     build: services/moex
     ports:
       - "8001:8001"
     volumes:
-      - services/moex:/moex
+      - ./services/moex:/moex
 
   db:
     image: timescale/timescaledb:latest-pg17
@@ -30,7 +30,7 @@ services:
     ports:
       - "8002:8002"
     volumes:
-      - /services/db:/db_service
+      - ./services/db:/db_service
     depends_on:
       - db
 
@@ -39,7 +39,7 @@ services:
     ports:
       - "8003:8003"
     volumes:
-      - services/updater:/updater
+      - ./services/updater:/updater
     depends_on:
       - moex_service
       - db_service
