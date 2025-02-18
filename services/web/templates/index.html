@@ -63,14 +63,20 @@
 
 <body>
     <div class="form-container">
-        <select id="categoryDropdown">
-            <option value="" disabled selected>Выберите категорию</option>
-            <option value="акция">Акции</option>
-            <option value="облигация">Облигации</option>
-            <option value="валюта">Валюты</option>
-        </select>
-        <select id="valueDropdown" disabled>
-            <option value="" disabled selected>Выберите значение категории</option>
+        <select id="valueDropdown">
+            <option value="" disabled selected>Выберите акцию</option>
+            <option value="сбер">Сбер</option>
+            <option value="газпром">Газпром</option>
+            <option value="лукойл">Лукойл</option>
+            <option value="роснефть">Роснефть</option>
+            <option value="яндекс">Яндекс</option>
+            <option value="аэрофлот">Аэрофлот</option>
+            <option value="мтс">МТС</option>
+            <option value="нлмк">НЛМК</option>
+            <option value="полюс">Полюс</option>
+            <option value="татнефть">Татнефть</option>
+            <option value="норникель">Норникель</option>
+            <option value="магнит">Магнит</option>
         </select>
         <input type="date" id="startDate">
         <input type="date" id="endDate">
@@ -97,35 +103,13 @@
         endDateInput.max = currentDate;
         endDateInput.value = currentDate;
 
-        const categoryDropdown = document.getElementById('categoryDropdown');
-        const valueDropdown = document.getElementById('valueDropdown');
-
-        const options = {
-            акция: ["Сбер", "Газпром", "Лукойл", "Роснефть", "Яндекс", "Аэрофлот", "МТС", "НЛМК", "Полюс", "Татнефть", "Норникель", "Магнит"],
-            облигация: ["Сбер", "Газпром", "Лукойл", "Роснефть", "Новатэк"],
-            валюта: ["Доллар", "Евро", "Юань", "Швейцарский франк", "Фунт", "Йена", "Беларусский рубль", "Турецкая лира", "Тенге"]
-        };
-
-        categoryDropdown.addEventListener('change', function () {
-            valueDropdown.innerHTML = '<option value="" disabled selected>Выберите значение категории</option>';
-            const selectedCategory = categoryDropdown.value;
-            options[selectedCategory].forEach(item => {
-                const option = document.createElement('option');
-                option.value = item.toLowerCase();
-                option.textContent = item;
-                valueDropdown.appendChild(option);
-            });
-            valueDropdown.disabled = false;
-        });
-
         document.getElementById('draw-chart-button').addEventListener('click', function () {
-            const category = categoryDropdown.value;
-            const value = valueDropdown.value;
+            const value = document.getElementById('valueDropdown').value;
             const start_date = startDateInput.value;
             const end_date = endDateInput.value;
 
-            if (!category || !value) {
-                alert('Пожалуйста, заполните оба поля!');
+            if (!value) {
+                alert('Пожалуйста, выберите акцию!');
                 return;
             }
 
@@ -148,7 +132,7 @@
             }
 
             const data = {
-                category: category,
+                category: 'акция', // Жёстко задано, так как выбор категорий больше не нужен
                 value: value,
                 start_date: start_date,
                 end_date: end_date,
