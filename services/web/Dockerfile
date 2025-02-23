@@ -1,6 +1,7 @@
 FROM python:3.13-slim
 WORKDIR /web
 COPY . .
+COPY ../../logger.py ./logger.py
 ENV PYTHONPATH="/web"
 RUN pip install --no-cache-dir -r requirements.txt
 CMD ["uvicorn", "main:webapp", "--host=0.0.0.0", "--port=8000"]

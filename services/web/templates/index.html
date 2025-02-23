@@ -132,7 +132,6 @@
             }
 
             const data = {
-                category: 'акция', // Жёстко задано, так как выбор категорий больше не нужен
                 value: value,
                 start_date: start_date,
                 end_date: end_date,
@@ -145,7 +144,12 @@
                 },
                 body: JSON.stringify(data)
             })
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Ошибка сервера: ' + response.status);
+                    }
+                    return response.json();
+                })
                 .then(data => {
                     if (data.redirect) {
                         window.location.href = data.redirect;

@@ -1,10 +1,11 @@
 from fastapi import FastAPI, Request
 from fastapi.templating import Jinja2Templates
-from datetime import datetime
 import httpx
+from logger import Logger
 
 webapp = FastAPI()
 templates = Jinja2Templates(directory="templates")
+logger = Logger("webapp")
 
 
 @webapp.get("/")
@@ -15,18 +16,19 @@ async def start(request: Request):
 @webapp.post("/chart-parameters")
 async def handle_parameters(request: Request):
     parameters = await request.json()
-    category = parameters.get("category")
     value = parameters.get("value")
     start_date = parameters.get("start_date")
     end_date = parameters.get("end_date")
 
-    redirect_url = webapp.url_path_for(
-        "show_chart",
-        category=category,
-        value=value,
-        start_date=start_date,
-        end_date=end_date,
+    logger.info(f"Got parameters: {value}, {start_date}, {end_date}")
+
+    redirect_url = (
+        str(request.url_for("show_chart"))
+        + f"?value={value}&start_date={start_date}&end_date={end_date}"
     )
+
+    logger.info(f"Make redirect for {redirect_url}")
+
     return {"redirect": redirect_url}
 
 
@@ -34,9 +36,12 @@ async def handle_parameters(request: Request):
 async def show_chart(request: Request):
     parameters = request.query_params
     value = parameters.get("value")
-    from_date = datetime.strptime(parameters.get("start_date"), "%Y-%m-%d").date()
-    till_date = datetime.strptime(parameters.get("end_date"), "%Y-%m-%d").date()
+    from_date = parameters.get("start_date")
+    till_date = parameters.get("end_date")
     params = {"table_name": value, "from_date": from_date, "till_date": till_date}
+
+    logger.debug(f"Sending request with params: {params}")
     r = httpx.get("http://db_service:8002/select_data", params=params)
-    print(r.url)
+
+    logger.info(f"Got info: {r.text}")
     return f"{r.text}"
