@@ -4,9 +4,10 @@ from datetime import datetime
 from dateutil.relativedelta import relativedelta
 import httpx
 import tickers
+from logger import Logger
 
 data_updater = FastAPI()
-
+logger = Logger("updater")
 
 async def update_ticker_data(ticker: str):
     async with httpx.AsyncClient() as client:
@@ -22,13 +23,15 @@ async def update_ticker_data(ticker: str):
         )
         data = moex_response.json()["data"]
 
+        logger.info(f"Collected data: {data}")    
+
         await client.post("http://db_service:8002/create_table", params=f"{ticker}")
         await client.post(
             "http://db_service:8002/delete_data",
             json={"table_name": ticker, "till_date": till_date},
         )
         await client.post(
-            "http://db_service:8002/insert_data" "http://db_service:8002/insert_data",
+            "http://db_service:8002/insert_data",
             json={"table_name": ticker, "data": data},
         )
 
@@ -43,4 +46,4 @@ async def scheduled_update():
 @data_updater.post("/trigger_update")
 async def trigger_update(background_tasks: BackgroundTasks):
     background_tasks.add_task(scheduled_update)
-    return {"message": "Update triggered"}
+    logger.info("Update triggered")

@@ -5,6 +5,7 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/
 WORKDIR /updater
 COPY . .
+COPY ../../logger.py ./logger.py
 ENV PYTHONPATH="/updater"
 RUN pip install --no-cache-dir -r requirements.txt
 CMD ["uvicorn", "main:data_updater", "--host=0.0.0.0", "--port=8003"]
