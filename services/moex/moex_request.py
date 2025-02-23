@@ -1,6 +1,6 @@
 from datetime import datetime, date
 from dateutil.relativedelta import relativedelta
-#from logger import Logger
+from logger import Logger
 
 
 class MoexRequestAttributes:
@@ -8,7 +8,7 @@ class MoexRequestAttributes:
     _from_date: date
     _till_date: date
     _RECORDS_PER_REQUEST: int = 100
-    #_logger: Logger
+    _logger: Logger
 
     def __init__(
         self,
@@ -19,7 +19,7 @@ class MoexRequestAttributes:
         self._ticket = ticker
         self._from_date = from_date
         self._till_date = till_date
-        #self._logger = Logger("moex_attributes")
+        self._logger = Logger("moex_attributes")
 
     def get_start_date(self) -> date:
         return self._from_date
@@ -53,5 +53,5 @@ class MoexRequestAttributes:
             )
             urls.append(url)
             start_date += relativedelta(days=self._RECORDS_PER_REQUEST)
-        #self._logger.debug(f"Created {len(urls)} url(s) for request: {urls}")
+        self._logger.debug(f"Created {len(urls)} url(s) for request: {urls}")
         return urls
