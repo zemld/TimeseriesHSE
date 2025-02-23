@@ -6,6 +6,7 @@ services:
       - "8000:8000"
     volumes:
       - ./services/web:/web
+      - ./logger.py:/web/logger.py
 
   moex_service:
     build: services/moex
@@ -13,6 +14,7 @@ services:
       - "8001:8001"
     volumes:
       - ./services/moex:/moex
+      - ./logger.py:/moex/logger.py
 
   db:
     image: timescale/timescaledb:latest-pg17
@@ -31,6 +33,7 @@ services:
       - "8002:8002"
     volumes:
       - ./services/db:/db_service
+      - ./logger.py:/db_service/logger.py
     depends_on:
       - db
 
@@ -40,6 +43,7 @@ services:
       - "8003:8003"
     volumes:
       - ./services/updater:/updater
+      - ./logger.py:/updater/logger.py
     depends_on:
       - moex_service
       - db_service
