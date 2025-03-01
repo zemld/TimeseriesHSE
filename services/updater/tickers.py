@@ -1,4 +1,5 @@
 from enum import Enum
+from typing import List
 
 
 class ActionTickers(Enum):
@@ -46,5 +47,5 @@ def action_value_to_enum(action: str):
     raise ValueError(f"Unknown action: {action}")
 
 
-def get_all_action_tickers():
+def get_all_action_tickers() -> List[str]:
     return [ticker.value for ticker in ActionTickers]
