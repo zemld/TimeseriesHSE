@@ -7,13 +7,12 @@ from logger import Logger
 
 db_manager = FastAPI()
 db = DatabaseManager("db", 5432, "db", "user", "secret")
-db.connect()
 logger = Logger("db_service")
 
 
 class InsertDataRequest(BaseModel):
     table_name: str
-    data: Dict[date, float]
+    data: dict
 
 
 class SelectDataRequest(BaseModel):
@@ -41,6 +40,7 @@ async def create_table(table_name: str):
 @db_manager.post("/insert_data")
 async def insert_data(request: InsertDataRequest):
     logger.info(f"Recieved request to insert data into table {request.table_name}")
+    logger.debug(f"{request.data}")
     try:
         await db.insert_data(request.table_name, request.data)
         return {"message": "Data inserted successfully"}
