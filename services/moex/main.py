@@ -1,28 +1,24 @@
+from datetime import datetime
 from fastapi import FastAPI, HTTPException
-from datetime import date
-from pydantic import BaseModel
 from moex_connector import MoexConnector
 from moex_request import MoexRequestAttributes
 from logger import Logger
 
-moex_app = FastAPI()
+moex = FastAPI()
 logger = Logger("moex")
 
-class FetchDataRequest(BaseModel):
-    ticker: str
-    from_date: date
-    till_date: date
 
-
-@moex_app.post("/fetch_data_from_moex")
-async def fetch_data(request: FetchDataRequest):
+@moex.get("/fetch_data")
+async def fetch_data(ticker: str, from_date: str, till_date: str):
     try:
         attributes = MoexRequestAttributes(
-            request.ticker, request.from_date, request.till_date
+            ticker,
+            datetime.strptime(from_date, "%Y-%m-%d").date(),
+            datetime.strptime(till_date, "%Y-%m-%d").date(),
         )
         connector = MoexConnector()
         data = connector.fetch_data(attributes)
-        
+
         logger.info(f"Collected data: {data}")
         return {"data": data}
     except Exception as e:
