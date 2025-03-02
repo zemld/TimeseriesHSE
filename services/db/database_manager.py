@@ -26,7 +26,6 @@ class DatabaseManager:
             await self.connect()
 
     async def start_transaction(self) -> None:
-        # TODO: Здесь тоже какой-то рофл.
         await self._check_and_create_connetion()
         transaction_query = "BEGIN TRANSACTION ISOLATION LEVEL SERIALIZABLE;"
         async with self._pool.acquire() as connection:
@@ -84,7 +83,6 @@ class DatabaseManager:
                 for date, price in data.items()
             ]
         )
-        # TODO: здесь какой-то рофл возникает.
         insert_query += values + "\nON CONFLICT (date) DO NOTHING;"
 
         async with self._pool.acquire() as connection:
