@@ -21,7 +21,7 @@ async def update_ticker_data(ticker: str):
             moex_response = await client.get(
                 "http://moex_service:8001/fetch_data",
                 params={
-                    "ticker": ticker,
+                    "table_name": ticker,
                     "from_date": str(from_date),
                     "till_date": str(till_date),
                 },
