@@ -16,7 +16,7 @@ class ActionTickers(Enum):
     Magnit = "MGNT"
 
 
-def action_value_to_enum(action: str):
+def action_value_to_enum(action: str) -> ActionTickers:
     action = action.lower()
     if action == "сбер":
         return ActionTickers.Sber
