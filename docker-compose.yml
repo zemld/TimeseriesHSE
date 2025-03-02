@@ -48,5 +48,15 @@ services:
       - moex_service
       - db_service
 
+  analyzer_service:
+    build: services/analyzer
+    ports:
+      - "8004:8004"
+    volumes:
+      - ./services/analyzer:/analyzer
+      - ./logger.py:/analyzer/logger.py
+    depends_on:
+      - db_service
+
 volumes:
   timeseries_data:
