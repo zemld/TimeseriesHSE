@@ -1,21 +1,22 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from logger import Logger
-from pydantic import BaseModel
 
 
 analyzer = FastAPI()
 logger = Logger("analyzer")
 
 
-class DataModel(BaseModel):
-    series: dict
+@analyzer.post("/analize")
+async def analize(request: Request):
+    data_json = await request.json()
+    data = data_json.get("data")
+    logger.debug(f"Got data: {data}")
+    return {0: 1}
 
 
-@analyzer.get("/analize")
-def analize(data: DataModel):
-    logger.debug(f"Got data: {data.series}")
-
-
-@analyzer.get("/predict")
-def predict(data: DataModel):
-    logger.debug(f"Got data: {data.series}")
+@analyzer.post("/predict")
+async def predict(request: Request):
+    data_json = await request.json()
+    data = data_json.get("data")
+    logger.debug(f"Got data: {data}")
+    return {1: 1}
