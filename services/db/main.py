@@ -15,12 +15,6 @@ class InsertDataRequest(BaseModel):
     data: dict
 
 
-class SelectDataRequest(BaseModel):
-    table_name: str
-    from_date: date
-    till_date: date
-
-
 class DeleteDataRequest(BaseModel):
     table_name: str
     till_date: str
@@ -61,11 +55,11 @@ async def delete_data(request: DeleteDataRequest):
 
 
 @db_manager.get("/select_data")
-async def select_data(request: SelectDataRequest):
-    logger.info(f"Recieved request to select data from table {request.table_name}")
+async def select_data(table_name: str, from_date: str, till_date: str):
+    logger.info(f"Recieved request to select data from table {table_name}")
     try:
-        data = await db.select_data(request.table_name, request.from_date, request.till_date)
+        data = await db.select_data(table_name, from_date, till_date)
         return {"data": data}
     except Exception as e:
-        logger.error(f"Failed to select data from table {request.table_name}: {str(e)}")
+        logger.error(f"Failed to select data from table {table_name}: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
