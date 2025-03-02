@@ -7,6 +7,10 @@ services:
     volumes:
       - ./services/web:/web
       - ./logger.py:/web/logger.py
+      - ./tickers.py:/web/tickers.py
+    depends_on:
+      - db_service
+      - analyzer_service
 
   moex_service:
     build: services/moex
