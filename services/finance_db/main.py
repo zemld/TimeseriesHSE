@@ -7,7 +7,7 @@ from logger import Logger
 
 db_manager = FastAPI()
 db = DatabaseManager("db", 5432, "db", "user", "secret")
-logger = Logger("db_service")
+logger = Logger("finance_db_service")
 
 
 class InsertDataRequest(BaseModel):
