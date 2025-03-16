@@ -1,12 +1,10 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-from datetime import date
-from typing import Dict
 from database_manager import DatabaseManager
 from logger import Logger
 
 db_manager = FastAPI()
-db = DatabaseManager("db", 5432, "db", "user", "secret")
+db = DatabaseManager("finance_db", 5432, "finance_db", "user", "secret")
 logger = Logger("finance_db_service")
 
 
