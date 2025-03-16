@@ -90,16 +90,16 @@ class DatabaseManager:
         self._logger.info(f"Data inserted into {table_name}")
 
     async def select_data(
-        self, table_name: str, from_date: datetime, till_date: datetime
+        self, table_name: str, from_datetime: datetime, till_datetime: datetime
     ) -> dict[date, float]:
         await self._check_and_create_connetion()
-        select_query = f"SELECT * FROM {table_name} WHERE date BETWEEN '{from_date}' AND '{till_date}';"
+        select_query = f"SELECT * FROM {table_name} WHERE date BETWEEN '{from_datetime}' AND '{till_datetime}';"
 
         rows = []
         async with self._pool.acquire() as connection:
             rows = await connection.fetch(select_query)
 
-        result = {row["date"]: row["price"] for row in rows}
+        result = {row["datetime"]: row["price"] for row in rows}
         self._logger.info(f"Data selected from {table_name}: {result}")
         return result
 
