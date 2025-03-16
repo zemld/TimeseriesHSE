@@ -20,15 +20,15 @@ services:
       - ./services/moex:/moex
       - ./logger.py:/moex/logger.py
 
-  flights_service:
-    build: services/flights
-    ports:
-      - "8005:8005"
-    volumes:
-      - ./services/flights:/flights
-      - ./logger.py:/flights/logger.py
-    depends_on:
-      - finance_db_service
+  # flights_service:
+  #   build: services/flights
+  #   ports:
+  #     - "8005:8005"
+  #   volumes:
+  #     - ./services/flights:/flights
+  #     - ./logger.py:/flights/logger.py
+  #   depends_on:
+  #     - finance_db_service
 
   finance_db:
     image: timescale/timescalefinance_db:latest-pg17
@@ -52,6 +52,16 @@ services:
     depends_on:
       - finance_db
   
+  electricity_service:
+    build: services/electricity
+    ports:
+      - "8007:8007"
+    volumes:
+      - ./services/electricity:/electricity
+      - ./logger.py:/electricity/logger.py
+    depends_on:
+      - electricity_db_service
+
   electricity_db:
     image: timescale/timescalefinance_db:latest-pg17
     ports:
@@ -72,7 +82,7 @@ services:
       - ./logger.py:/electricity_db_service/logger.py
       - ./db_manager:/electricity_db_service
     depends_on:
-      - electricity_db  
+      - electricity_db
 
   updater_service:
     build: services/updater
@@ -84,7 +94,8 @@ services:
     depends_on:
       - moex_service
       - finance_db_service
-      - flights_service
+      - electricity_service
+      - electricity_db_service
 
   analyzer_service:
     build: services/analyzer
@@ -95,6 +106,7 @@ services:
       - ./logger.py:/analyzer/logger.py
     depends_on:
       - finance_db_service
+      - electricity_db_service
 
 volumes:
   timeseries_data:
