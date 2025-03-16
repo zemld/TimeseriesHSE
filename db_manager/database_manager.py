@@ -91,7 +91,7 @@ class DatabaseManager:
 
     async def select_data(
         self, table_name: str, from_datetime: datetime, till_datetime: datetime
-    ) -> dict[date, float]:
+    ) -> dict[datetime, float]:
         await self._check_and_create_connetion()
         select_query = f"SELECT * FROM {table_name} WHERE date BETWEEN '{from_datetime}' AND '{till_datetime}';"
 
