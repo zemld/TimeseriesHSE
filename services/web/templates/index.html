@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dependent Dropdowns</title>
+    <title>Главная страница</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -17,152 +17,44 @@
             background-color: #f9f9f9;
         }
 
-        .form-container {
+        .container {
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 15px;
-            padding: 20px;
+            gap: 20px;
+            padding: 30px;
             border: 1px solid #ddd;
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             background-color: #fff;
         }
 
-        select,
-        input[type="date"],
-        button {
+        .nav-button {
             width: 220px;
-            padding: 10px;
-            font-size: 16px;
-            font-family: Arial, sans-serif;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            transition: border-color 0.2s ease-in-out;
-        }
-
-        select:focus,
-        input[type="date"]:focus {
-            border-color: #007bff;
-            outline: none;
-        }
-
-        button {
-            cursor: pointer;
-            background-color: #007bff;
+            padding: 15px 25px;
+            font-size: 18px;
+            text-align: center;
+            text-decoration: none;
             color: #fff;
+            background-color: #007bff;
             border: none;
-            font-weight: bold;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.2s ease-in-out;
         }
 
-        button:hover {
+        .nav-button:hover {
             background-color: #0056b3;
         }
     </style>
 </head>
 
 <body>
-    <div class="form-container">
-        <select id="valueDropdown">
-            <option value="" disabled selected>Выберите акцию</option>
-            <option value="сбер">Сбер</option>
-            <option value="газпром">Газпром</option>
-            <option value="лукойл">Лукойл</option>
-            <option value="роснефть">Роснефть</option>
-            <option value="яндекс">Яндекс</option>
-            <option value="аэрофлот">Аэрофлот</option>
-            <option value="мтс">МТС</option>
-            <option value="нлмк">НЛМК</option>
-            <option value="полюс">Полюс</option>
-            <option value="татнефть">Татнефть</option>
-            <option value="норникель">Норникель</option>
-            <option value="магнит">Магнит</option>
-        </select>
-        <input type="date" id="startDate">
-        <input type="date" id="endDate">
-        <button id="draw-chart-button">Нарисовать график</button>
+    <div class="container">
+        <a href="/actions" class="nav-button">Акции</a>
+        <a href="/flights" class="nav-button">Авиаперелеты</a>
+        <a href="/electricity" class="nav-button">Электричество</a>
     </div>
-    <script>
-        const today = new Date();
-        const yyyy = today.getFullYear();
-        const mm = String(today.getMonth() + 1).padStart(2, '0');
-        const dd = String(today.getDate()).padStart(2, '0');
-
-        const pastYear = yyyy - 3;
-        const minDate = `${pastYear}-${mm}-${dd}`;
-        const currentDate = `${yyyy}-${mm}-${dd}`;
-
-        const startDateInput = document.getElementById('startDate');
-        const endDateInput = document.getElementById('endDate');
-
-        startDateInput.min = minDate;
-        startDateInput.max = currentDate;
-        startDateInput.value = minDate;
-
-        endDateInput.min = minDate;
-        endDateInput.max = currentDate;
-        endDateInput.value = currentDate;
-
-        document.getElementById('draw-chart-button').addEventListener('click', function () {
-            const value = document.getElementById('valueDropdown').value;
-            const start_date = startDateInput.value;
-            const end_date = endDateInput.value;
-
-            if (!value) {
-                alert('Пожалуйста, выберите акцию!');
-                return;
-            }
-
-            if (start_date > end_date) {
-                alert('Начало интервала не может превосходить его конец!');
-                return;
-            }
-
-            const startDate = new Date(start_date);
-            const minAllowedDate = new Date(minDate);
-            if (startDate < minAllowedDate) {
-                alert('Начало интервала не может отличаться от текущей даты больше, чем на 3 года!');
-                return;
-            }
-
-            const endDate = new Date(end_date);
-            if (endDate > today) {
-                alert('Конец интервала не может превышать текущую дату!');
-                return;
-            }
-
-            const data = {
-                value: value,
-                start_date: start_date,
-                end_date: end_date,
-            };
-
-            fetch('/make-analysis', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(data)
-            })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Ошибка сервера: ' + response.status);
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    if (data.redirect) {
-                        window.location.href = data.redirect;
-                    } else if (data.error) {
-                        alert('Ошибка: ' + data.error);
-                    }
-                })
-                .catch(error => {
-                    console.error('Ошибка:', error);
-                    alert('Произошла ошибка при построении графика.');
-                });
-        });
-    </script>
 </body>
 
 </html>
