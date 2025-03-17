@@ -10,7 +10,7 @@ templates = Jinja2Templates(directory="templates")
 logger = Logger("webapp")
 
 
-async def fetch_parameters(request: Request):
+async def fetch_finance_parameters(request: Request):
     parameters = await request.json()
     logger.debug(f"Got parameters: {parameters}")
     value = action_value_to_enum(parameters.get("value")).value
@@ -24,9 +24,14 @@ async def start(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
 
 
-@webapp.post("/make-analysis")
-async def run_flow(request: Request):
-    (table_name, from_date, till_date) = await fetch_parameters(request)
+@webapp.get("/actions")
+async def choose_action(request: Request):
+    return templates.TemplateResponse("actions.html", {"request": request})
+
+
+@webapp.post("/make-action-analysis")
+async def run_action_flow(request: Request):
+    (table_name, from_date, till_date) = await fetch_finance_parameters(request)
     logger.debug(f"Sending request with params: {table_name, from_date, till_date}")
 
     try:
@@ -59,6 +64,23 @@ async def run_flow(request: Request):
         logger.error(e)
         return RedirectResponse(url=f"/error?error={e}")
 
+
+@webapp.get("/electricity")
+async def choose_electricity(request: Request):
+    return templates.TemplateResponse("electricity.html", {"request": request})
+
+@webapp.post("/make-electricity-analysis")
+async def run_electricity_flow(request: Request):
+    pass
+
+# @webapp.get("/flights")
+# async def choose_flight(request: Request):
+#     return templates.TemplateResponse("flights.html", {"request": request})
+
+
+# @webapp.post("/make-flight-analysis")
+# async def run_flight_flow(request: Request):
+#     pass
 
 @webapp.get("/error")
 async def handle_error(request: Request):
