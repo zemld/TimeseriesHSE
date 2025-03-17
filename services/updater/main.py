@@ -11,7 +11,7 @@ data_updater = FastAPI()
 logger = Logger("updater")
 
 
-async def update_ticker_data(ticker: str):
+async def update_finance_data(ticker: str):
     from_date = datetime.today().date() - relativedelta(years=3)
     till_date = datetime.today().date()
 
@@ -31,20 +31,20 @@ async def update_ticker_data(ticker: str):
             )
             moex_response.raise_for_status()
             data = moex_response.json()["data"]
-            
+
             logger.info(f"Collected data: {data}")
 
             await client.post(
-                "http://db_service:8002/create_table", params={"table_name": ticker}
+                "http://finance_db:8002/create_table", params={"table_name": ticker}
             )
             logger.debug(f"Table {ticker} created.")
             await client.post(
-                "http://db_service:8002/delete_data",
+                "http://finance_db:8002/delete_data",
                 json={"table_name": ticker, "till_date": str(till_date)},
             )
             logger.debug(f"Data deleted.")
-            await client.post(  
-                "http://db_service:8002/insert_data",
+            await client.post(
+                "http://finance_db:8002/insert_data",
                 json={"table_name": ticker, "data": data},
             )
             logger.debug(f"Data inserted.")
@@ -52,12 +52,52 @@ async def update_ticker_data(ticker: str):
         logger.error(e)
 
 
+async def update_electricity_data():
+    today = datetime.today().date()
+    logger.debug(f"Fetching data for {today}")
+
+    try:
+        async with httpx.AsyncClient() as client:
+            electricity_response = await client.get(
+                "http://electricity_service:8007/fetch_electricity_data",
+                params={
+                    "year": str(today.year),
+                    "month": str(today.month),
+                    "day": str(today.day),
+                },
+            )
+            logger.debug(
+                f"Electricity response: {electricity_response.status_code}, {electricity_response.text}"
+            )
+            electricity_response.raise_for_status()
+            data = electricity_response.json()
+            logger.info(f"Collected data: {data}")
+
+            await client.post(
+                "http://electricity_db_service:8006/create_table",
+                params={"table_name": "electricity"},
+            )
+            logger.debug("Table electricity created.")
+            await client.post(
+                "http://electricity_db_service:8006/delete_data",
+                json={"table_name": "electricity", "till_date": str(today)},
+            )
+            logger.debug("Data deleted.")
+            await client.post(
+                "http://electricity_db_service:8006/insert_data",
+                json={"table_name": "electricity", "data": {today: data["price"]}},
+            )
+            logger.debug("Data inserted.")
+    except httpx.HTTPError as e:
+        logger.error(f"Failed to fetch data: {e}")
+
+
 @data_updater.on_event("startup")
-@repeat_every(seconds=30, wait_first=False)
+@repeat_every(days=1, wait_first=False)
 async def scheduled_update():
     logger.info("Update scheduled")
     tickers_list = tickers.get_all_action_tickers()
-    await asyncio.gather(*(update_ticker_data(ticker) for ticker in tickers_list))
+    await asyncio.gather(*(update_finance_data(ticker) for ticker in tickers_list))
 
 
 @data_updater.post("/trigger_update")
