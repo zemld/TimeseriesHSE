@@ -69,18 +69,11 @@ async def run_action_flow(request: Request):
 async def choose_electricity(request: Request):
     return templates.TemplateResponse("electricity.html", {"request": request})
 
+
 @webapp.post("/make-electricity-analysis")
 async def run_electricity_flow(request: Request):
     pass
 
-# @webapp.get("/flights")
-# async def choose_flight(request: Request):
-#     return templates.TemplateResponse("flights.html", {"request": request})
-
-
-# @webapp.post("/make-flight-analysis")
-# async def run_flight_flow(request: Request):
-#     pass
 
 @webapp.get("/error")
 async def handle_error(request: Request):
