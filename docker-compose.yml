@@ -20,16 +20,6 @@ services:
       - ./services/moex:/moex
       - ./logger.py:/moex/logger.py
 
-  # flights_service:
-  #   build: services/flights
-  #   ports:
-  #     - "8005:8005"
-  #   volumes:
-  #     - ./services/flights:/flights
-  #     - ./logger.py:/flights/logger.py
-  #   depends_on:
-  #     - finance_db_service
-
   finance_db:
     image: timescale/timescalefinance_db:latest-pg17
     ports:
@@ -40,7 +30,7 @@ services:
       POSTGRES_PASSWORD: secret
       POSTGRES_USER: user
       POSTGRES_DB: finance_db
-  
+
   finance_db_service:
     build: services/finance_db
     ports:
@@ -51,7 +41,7 @@ services:
       - ./db_manager:/finance_db_service
     depends_on:
       - finance_db
-  
+
   electricity_service:
     build: services/electricity
     ports:
