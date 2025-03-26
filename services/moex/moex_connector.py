@@ -45,16 +45,33 @@ class MoexConnector:
             return {}
 
         tradedate_index = columns.index("TRADEDATE")
-        waprice_index = columns.index("WAPRICE")
+        close_index = columns.index("CLOSE")
+        open_index = columns.index("OPEN")
+        low_index = columns.index("LOW")
+        high_index = columns.index("HIGH")
+        trendclspr_index = columns.index("TRENDCLSPR")
+        volume_index = columns.index("VOLUME")
+        numtrades_index = columns.index("NUMTRADES")
 
-        trades = {}
+        trades = []
         for data in data_as_jsons:
             records = data.get("history").get("data")
             for record in records:
-                record_date = datetime.strptime(
+                record_date = str(datetime.strptime(
                     record[tradedate_index], "%Y-%m-%d"
-                ).date()
-                trades[record_date] = record[waprice_index]
+                ).date())
+                trades.append(
+                    {
+                        "date": record_date,
+                        "close": record[close_index],
+                        "open": record[open_index],
+                        "low": record[low_index],
+                        "high": record[high_index],
+                        "trendclspr": record[trendclspr_index],
+                        "volume": record[volume_index],
+                        "numtrades": record[numtrades_index],
+                    }
+                )
 
         self._logger.info(f"Fetched data: {trades}")
         return trades
