@@ -25,12 +25,6 @@ class DataFetcher(ABC):
     def set_params(self, params: dict) -> None:
         self._params = params
 
+    @abstractmethod
     def get_url(self) -> str:
-        concrete_url = self._url
-        if self._params:
-            concrete_url += "?"
-            for key, value in self._params.items():
-                concrete_url += f"{key}={value}&"
-            concrete_url = concrete_url[:-1]
-        self._logger.info(f"Concrete URL: {concrete_url}")
-        return concrete_url
+        pass
