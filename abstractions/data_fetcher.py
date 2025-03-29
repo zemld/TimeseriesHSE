@@ -14,6 +14,14 @@ class DataFetcher(ABC):
     async def fetch_data(self) -> List[T]:
         pass
 
+    @abstractmethod
+    async def _get_raw_data(self) -> dict:
+        pass
+
+    @abstractmethod
+    def parse_data(self, data: dict) -> List[T]:
+        pass
+
     def set_params(self, params: dict) -> None:
         self._params = params
 
