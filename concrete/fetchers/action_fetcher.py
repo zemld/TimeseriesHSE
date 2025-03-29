@@ -8,6 +8,11 @@ class ActionFetcher(DataFetcher[Action]):
         "https://iss.moex.com/iss/history/engines/stock/markets/shares/boards/TQBR/securities/"
     )
 
+    async def fetch_data(self) -> list[Action]:
+        raw_data = await self._get_raw_data()
+        actions = self.parse_data(raw_data)
+        return actions
+
     async def _get_raw_data(self) -> dict:
         async with httpx.AsyncClient() as client:
             response = await client.get(self.get_url())
@@ -17,6 +22,16 @@ class ActionFetcher(DataFetcher[Action]):
         if not data:
             self._logger.info("No data fetched.")
             return {}
+
+    def get_url(self) -> str:
+        concrete_url = self._url
+        if self._params:
+            concrete_url += "?"
+            for key, value in self._params.items():
+                concrete_url += f"{key}={value}&"
+            concrete_url = concrete_url[:-1]
+        self._logger.info(f"Concrete URL: {concrete_url}")
+        return concrete_url
 
     def parse_data(self, data):
         history_data = data.get("history", {})
@@ -53,9 +68,4 @@ class ActionFetcher(DataFetcher[Action]):
                 )
             )
         self._logger.info(f"Fetched data: {actions}")
-        return actions
-
-    async def fetch_data(self) -> list[Action]:
-        raw_data = await self._get_raw_data()
-        actions = self.parse_data(raw_data)
         return actions
