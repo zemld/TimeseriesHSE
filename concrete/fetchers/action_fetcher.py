@@ -8,11 +8,6 @@ class ActionFetcher(DataFetcher[Action]):
         "https://iss.moex.com/iss/history/engines/stock/markets/shares/boards/TQBR/securities/"
     )
 
-    async def fetch_data(self) -> list[Action]:
-        raw_data = await self._get_raw_data()
-        actions = self.parse_data(raw_data)
-        return actions
-
     async def _get_raw_data(self) -> dict:
         async with httpx.AsyncClient() as client:
             response = await client.get(self.get_url())

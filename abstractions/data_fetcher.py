@@ -10,9 +10,10 @@ class DataFetcher(ABC):
     _params: dict
     _logger: Logger
 
-    @abstractmethod
     async def fetch_data(self) -> List[T]:
-        pass
+        raw_data = await self._get_raw_data()
+        records = self.parse_data(raw_data)
+        return records
 
     @abstractmethod
     async def _get_raw_data(self) -> dict:
