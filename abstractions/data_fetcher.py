@@ -13,6 +13,7 @@ class DataFetcher(ABC):
     async def fetch_data(self) -> List[T]:
         raw_data = await self._get_raw_data()
         records = self.parse_data(raw_data)
+        self._logger.info(f"Fetched data: {records}")
         return records
 
     @abstractmethod
@@ -25,6 +26,7 @@ class DataFetcher(ABC):
 
     def set_params(self, params: dict) -> None:
         self._params = params
+        self._logger.debug(f"Parameters set to: {self._params}")
 
     @abstractmethod
     def get_url(self) -> str:
