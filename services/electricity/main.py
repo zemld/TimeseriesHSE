@@ -1,27 +1,24 @@
 from fastapi import FastAPI
-import httpx
+from concrete.db_managers.electricity_db_manager import ElectricityDBManager
+from concrete.fetchers.electricity_fetcher import ElectricityFetcher
 from logger import Logger
 
 electricity_service = FastAPI()
-logger = Logger("electricity_service")
+electricity_logger = Logger("electricity_service")
+electricity_db_manager = ElectricityDBManager(
+    db_name="electricity_db",
+    db_port=5432,
+    db_user="electricity_db",
+    db_password="secret",
+)
+electricity_fetcher = ElectricityFetcher()
 
-@electricity_service.get("/fetch_electricity_data")
-async def fetch(year: str, month: str, day: str):
-    url = f"https://www.elprisetjustnu.se/api/v1/prices/{year}/{month}-{day}_SE3.json"
-    try:
-        response = await httpx.get(url)
-        response.raise_for_status()
-        data = choose_data(response.json())
-        logger.info(f"Collected data: {data}")
-        return data
-    except httpx.HTTPError as e:
-        logger.error(f"Failed to fetch data: {e}")
-        return {"error": str(e)}
-    
-def choose_data(data: dict):
-    chosen_data = {}
-    for record in data:
-        timestamp = record["time_start"]
-        price = record["EUR_per_kWh"]
-        chosen_data[timestamp] = price
-    return chosen_data
+
+@electricity_service.get("/fetch_data")
+async def fetch_data():
+    pass
+
+
+@electricity_service.post("/update_data")
+async def update_data_in_db():
+    pass
