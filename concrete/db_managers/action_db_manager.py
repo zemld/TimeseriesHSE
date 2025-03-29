@@ -4,7 +4,7 @@ from logger import Logger
 from typing import List
 
 
-class ActionDBManager(DBManager):
+class ActionDBManager(DBManager[Action]):
     def __init__(self, host: str, port: int, name: str, user: str, password: str):
         super().__init__(host, port, name, user, password)
         self._logger = Logger("ActionDBManager")

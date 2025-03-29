@@ -4,7 +4,7 @@ from typing import List
 from domain_objects.electricity_record import ElectricityRecord
 
 
-class ElectricityDBManager(DBManager):
+class ElectricityDBManager(DBManager[ElectricityRecord]):
     def __init__(self, host: str, port: int, name: str, user: str, password: str):
         super().__init__(host, port, name, user, password)
         self._logger = Logger("ElectricityDBManager")
