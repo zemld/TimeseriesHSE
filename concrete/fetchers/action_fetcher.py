@@ -20,11 +20,16 @@ class ActionFetcher(DataFetcher[Action]):
 
     def get_url(self) -> str:
         concrete_url = self._url
-        if self._params:
-            concrete_url += "?"
-            for key, value in self._params.items():
-                concrete_url += f"{key}={value}&"
-            concrete_url = concrete_url[:-1]
+        if not self._params:
+            raise ValueError("Parameters not set.")
+        if not all(
+            param in self._params for param in ["ticker", "from_date", "till_date"]
+        ):
+            raise ValueError("Missing required parameters.")
+        ticker = self._params["ticker"]
+        from_date = self._params["from_date"]
+        till_date = self._params["till_date"]
+        concrete_url += f"{ticker}.json?from={from_date}&till={till_date}&iss.meta=off"
         self._logger.info(f"Concrete URL: {concrete_url}")
         return concrete_url
 
