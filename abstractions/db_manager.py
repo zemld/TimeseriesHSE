@@ -71,6 +71,18 @@ class DBManager(ABC):
             await connection.execute(transaction_query)
             self._logger.debug("Transaction committed")
 
+    async def update(self, table_name: str, old_date: str, data: List[T]):
+        try:
+            await self.start_transaction()
+            await self.create_table(table_name)
+            await self.delete_data(table_name, old_date)
+            await self.insert(table_name, data)
+            await self.commit_transaction()
+            self._logger.info(f"Updated table {table_name} with data: {data}")
+        except Exception as e:
+            await self.rollback_transaction()
+            self._logger.error(f"Failed to update table {table_name}: {e}")
+
     @abstractmethod
     async def create_table(self, table_name: str):
         pass
