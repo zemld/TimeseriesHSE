@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import TypeVar, List
+from logger import Logger
 
 T = TypeVar("T")
 
@@ -7,6 +8,7 @@ T = TypeVar("T")
 class DataFetcher(ABC):
     _url: str
     _params: dict
+    _logger: Logger
 
     @abstractmethod
     async def fetch_data(self) -> List[T]:
@@ -22,4 +24,5 @@ class DataFetcher(ABC):
             for key, value in self._params.items():
                 concrete_url += f"{key}={value}&"
             concrete_url = concrete_url[:-1]
+        self._logger.info(f"Concrete URL: {concrete_url}")
         return concrete_url
