@@ -79,9 +79,14 @@ class DBManager(ABC):
     async def insert(self, table_name: str, data: List[T]):
         pass
 
-    @abstractmethod
     async def delete_data(self, table_name: str, till_datetime: str):
-        pass
+        await self._check_and_create_connection()
+        delete_query = f"DELETE FROM {table_name} WHERE date < '{till_datetime}'"
+        async with self._pool.acquire() as connection:
+            await connection.execute(delete_query)
+            self._logger.info(
+                f"Deleted records from {table_name} older than {till_datetime}"
+            )
 
     @abstractmethod
     async def select(

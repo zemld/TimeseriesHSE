@@ -84,15 +84,6 @@ class ActionDBManager(DBManager):
             await connection.execute(insert_query, *flat_values)
             self._logger.info(f"Inserted {len(values)} records into table {table_name}")
 
-    async def delete_data(self, table_name: str, till_datetime: str):
-        await self._check_and_create_connection()
-        delete_query = f"DELETE FROM {table_name} WHERE date < '{till_datetime}'"
-        async with self._pool.acquire() as connection:
-            await connection.execute(delete_query)
-            self._logger.info(
-                f"Deleted records from {table_name} older than {till_datetime}"
-            )
-
     async def select(
         self, table_name: str, from_datetime: str, till_datetime: str
     ) -> List[Action]:
