@@ -69,7 +69,7 @@ class DBManager(ABC):
             self._logger.debug("Transaction committed")
 
     @abstractmethod
-    async def create_table(self, table_name: str, columns: dict):
+    async def create_table(self, table_name: str):
         pass
 
     @abstractmethod

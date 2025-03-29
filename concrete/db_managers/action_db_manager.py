@@ -9,7 +9,7 @@ class ActionDBManager(DBManager):
         super().__init__(host, port, name, user, password)
         self._logger = Logger("ActionDBManager")
 
-    async def create_table(self, table_name: str, columns: dict):
+    async def create_table(self, table_name: str):
         await self._check_and_create_connection()
         create_table_query = f"""
         CREATE TABLE IF NOT EXISTS {table_name} (
