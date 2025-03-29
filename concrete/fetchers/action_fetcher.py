@@ -62,5 +62,4 @@ class ActionFetcher(DataFetcher[Action]):
                     numtrades=record[numtrades_index],
                 )
             )
-        self._logger.info(f"Fetched data: {actions}")
         return actions
