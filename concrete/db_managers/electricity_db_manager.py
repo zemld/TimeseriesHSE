@@ -14,7 +14,7 @@ class ElectricityDBManager(DBManager[ElectricityRecord]):
         create_table_query = f"""
         CREATE TABLE IF NOT EXISTS {table_name} (
             timestamp TIMESTAMP PRIMARY KEY,
-            value DOUBLE PRECISION
+            price DOUBLE PRECISION
         );
         """
         async with self._pool.acquire() as connection:
@@ -29,13 +29,13 @@ class ElectricityDBManager(DBManager[ElectricityRecord]):
 
         values_list = []
         for record in data:
-            values_list.append((record.timestamp, record.value))
+            values_list.append((record.timestamp, record.price))
 
         insert_query = f"""
-            INSERT INTO {table_name} (timestamp, value)
+            INSERT INTO {table_name} (timestamp, price)
             VALUES ($1, $2)
             ON CONFLICT (timestamp) DO UPDATE
-            SET value = EXCLUDED.value;
+            SET price = EXCLUDED.price;
         """
         async with self._pool.acquire() as connection:
             async with connection.transaction():
@@ -59,7 +59,7 @@ class ElectricityDBManager(DBManager[ElectricityRecord]):
 
         electricity_records = []
         for row in rows:
-            record = ElectricityRecord(timestamp=row["timestamp"], value=row["value"])
+            record = ElectricityRecord(timestamp=row["timestamp"], price=row["price"])
             electricity_records.append(record)
 
         return electricity_records
