@@ -1,6 +1,9 @@
 from abc import ABC, abstractmethod
 import asyncpg
 from logger import Logger
+from typing import TypeVar, List
+
+T = TypeVar("T")
 
 
 class DBManager(ABC):
@@ -73,7 +76,7 @@ class DBManager(ABC):
         pass
 
     @abstractmethod
-    async def insert(self, table_name: str, data: dict):
+    async def insert(self, table_name: str, data: List[T]):
         pass
 
     @abstractmethod
@@ -81,5 +84,7 @@ class DBManager(ABC):
         pass
 
     @abstractmethod
-    async def select(self, table_name: str, from_datetime: str, till_datetime: str):
+    async def select(
+        self, table_name: str, from_datetime: str, till_datetime: str
+    ) -> List[T]:
         pass
