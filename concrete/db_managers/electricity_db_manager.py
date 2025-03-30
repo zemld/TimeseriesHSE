@@ -2,6 +2,7 @@ from abstractions.db_manager import DBManager
 from logger import Logger
 from typing import List
 from domain_objects.electricity_record import ElectricityRecord
+from datetime import datetime
 
 
 class ElectricityDBManager(DBManager[ElectricityRecord]):
@@ -23,13 +24,18 @@ class ElectricityDBManager(DBManager[ElectricityRecord]):
 
     async def insert(self, table_name: str, data: List[ElectricityRecord]):
         await self._check_and_create_connection()
-        if not data:
+        if not data or len(data) == 0:
             self._logger.debug(f"No data to insert into {table_name}.")
             return
 
         values_list = []
         for record in data:
-            values_list.append((record.timestamp, record.price))
+            values_list.append(
+                (
+                    datetime.fromisoformat(record.timestamp).replace(tzinfo=None),
+                    record.price,
+                )
+            )
 
         insert_query = f"""
             INSERT INTO {table_name} (timestamp, price)
@@ -48,7 +54,7 @@ class ElectricityDBManager(DBManager[ElectricityRecord]):
         await self._check_and_create_connection()
         select_query = f"""
         SELECT * FROM {table_name}
-        WHERE date BETWEEN '{from_datetime}' AND '{till_datetime}'
+        WHERE timestamp BETWEEN '{from_datetime}' AND '{till_datetime}'
         """
 
         async with self._pool.acquire() as connection:
