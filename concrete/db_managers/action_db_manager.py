@@ -2,6 +2,7 @@ from abstractions.db_manager import DBManager
 from domain_objects.action import Action
 from logger import Logger
 from typing import List
+from datetime import date
 
 
 class ActionDBManager(DBManager[Action]):
@@ -30,6 +31,9 @@ class ActionDBManager(DBManager[Action]):
 
     async def insert(self, table_name: str, data: List[Action]):
         await self._check_and_create_connection()
+        if not data or len(data) == 0:
+            self._logger.warning("No data to insert.")
+            return
         columns = [
             "date",
             "close",
@@ -41,35 +45,27 @@ class ActionDBManager(DBManager[Action]):
             "value",
             "numtrades",
         ]
-        values = []
-        for date, action in data.items():
-            values.append(
-                (
-                    date,
-                    action.close,
-                    action.open,
-                    action.low,
-                    action.high,
-                    action.trendclspr,
-                    action.volume,
-                    action.value,
-                    action.numtrades,
-                )
+        values = [
+            (
+                date.fromisoformat(a.date_value),
+                a.close,
+                a.open_value,
+                a.low,
+                a.high,
+                a.trendclspr,
+                a.volume,
+                a.value,
+                a.numtrades,
             )
+            for a in data
+        ]
 
-        placeholders = ",".join(
-            [
-                f"({','.join(['$'+str(i) for i in range(j*len(columns)+1, (j+1)*len(columns)+1)])})"
-                for j in range(len(values))
-            ]
-        )
-
-        insert_query = f"""
+        query = f"""
         INSERT INTO {table_name} ({', '.join(columns)})
-        VALUES {placeholders}
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
         ON CONFLICT (date) DO UPDATE SET
             close = EXCLUDED.close,
-            open = EXCLUDED.open, 
+            open = EXCLUDED.open,
             low = EXCLUDED.low,
             high = EXCLUDED.high,
             trendclspr = EXCLUDED.trendclspr,
@@ -78,10 +74,8 @@ class ActionDBManager(DBManager[Action]):
             numtrades = EXCLUDED.numtrades
         """
 
-        flat_values = [val for tup in values for val in tup]
-
-        async with self._pool.acquire() as connection:
-            await connection.execute(insert_query, *flat_values)
+        async with self._pool.acquire() as conn:
+            await conn.executemany(query, values)
             self._logger.info(f"Inserted {len(values)} records into table {table_name}")
 
     async def select(
