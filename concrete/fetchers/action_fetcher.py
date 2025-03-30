@@ -1,6 +1,7 @@
 from abstractions.data_fetcher import DataFetcher
 from domain_objects.action import Action
 import httpx
+from logger import Logger
 
 
 class ActionFetcher(DataFetcher[Action]):
@@ -8,15 +9,20 @@ class ActionFetcher(DataFetcher[Action]):
         "https://iss.moex.com/iss/history/engines/stock/markets/shares/boards/TQBR/securities/"
     )
 
+    def __init__(self):
+        self._logger = Logger("ActionFetcher")
+
     async def _get_raw_data(self) -> dict:
         async with httpx.AsyncClient() as client:
             response = await client.get(self.get_url())
             response.raise_for_status()
+            self._logger.debug(f"Response status code: {response.status_code}")
 
         data = response.json()
         if not data:
             self._logger.info("No data fetched.")
             return {}
+        return data
 
     def get_url(self) -> str:
         concrete_url = self._url
@@ -53,18 +59,24 @@ class ActionFetcher(DataFetcher[Action]):
         actions = []
         records = history_data.get("data", [])
         for record in records:
-            record_date = str(record[tradedate_index])
-            actions.append(
-                Action(
-                    date=record_date,
-                    close=record[close_index],
-                    open=record[open_index],
-                    low=record[low_index],
-                    high=record[high_index],
-                    trendclspr=record[trendclspr_index],
-                    volume=record[volume_index],
-                    value=record[value_index],
-                    numtrades=record[numtrades_index],
+            try:
+                record_date = str(record[tradedate_index])
+                actions.append(
+                    Action(
+                        date_value=record_date,
+                        close=record[close_index],
+                        open_value=record[open_index],
+                        low=record[low_index],
+                        high=record[high_index],
+                        trendclspr=record[trendclspr_index],
+                        volume=record[volume_index],
+                        value=record[value_index],
+                        numtrades=record[numtrades_index],
+                    )
                 )
-            )
+                self._logger.debug(f"Action: {actions[-1]}")
+            except Exception as e:
+                self._logger.error(f"Error parsing record {record}: {e}")
+                continue
+        self._logger.info(f"Parsed {len(actions)} actions.")
         return actions
