@@ -1,10 +1,14 @@
 from abstractions.data_fetcher import DataFetcher
 from domain_objects.electricity_record import ElectricityRecord
 import httpx
+from logger import Logger
 
 
 class ElectricityFetcher(DataFetcher[ElectricityRecord]):
     _url: str = "https://www.elprisetjustnu.se/api/v1/prices/"
+
+    def __init__(self):
+        self._logger = Logger("ElectricityFetcher")
 
     async def _get_raw_data(self) -> dict:
         async with httpx.AsyncClient() as client:
