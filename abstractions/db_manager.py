@@ -1,12 +1,12 @@
 from abc import ABC, abstractmethod
 import asyncpg
 from logger import Logger
-from typing import TypeVar, List
+from typing import Generic, TypeVar, List
 
 T = TypeVar("T")
 
 
-class DBManager(ABC):
+class DBManager(ABC, Generic[T]):
     _host: str
     _port: int
     _name: str

@@ -1,11 +1,11 @@
 from abc import ABC, abstractmethod
-from typing import TypeVar, List
+from typing import Generic, TypeVar, List
 from logger import Logger
 
 T = TypeVar("T")
 
 
-class DataFetcher(ABC):
+class DataFetcher(ABC, Generic[T]):
     _url: str
     _params: dict
     _logger: Logger
