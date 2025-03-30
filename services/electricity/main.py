@@ -7,11 +7,11 @@ from datetime import datetime
 electricity_service = FastAPI()
 logger = Logger("electricity_service")
 db_manager = ElectricityDBManager(
-    db_host="electricity_db",
-    db_port=5432,
-    db_name="electricity_db",
-    db_user="user",
-    db_password="secret",
+    host="electricity_db",
+    port=5432,
+    name="electricity_db",
+    user="user",
+    password="secret",
 )
 fetcher = ElectricityFetcher()
 
@@ -49,7 +49,7 @@ async def update_data_in_db(date: str):
 
     try:
         logger.info(f"Updating electricity data for {year}-{month}-{day}")
-        response = await fetch_data(year, month, day)
+        response = await fetch_data(date)
         data = response["data"]
         await db_manager.update("electricity", date, data)
         logger.info(f"Updated electricity data for {year}-{month}-{day} in DB.")
