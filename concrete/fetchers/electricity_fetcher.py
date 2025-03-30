@@ -19,6 +19,8 @@ class ElectricityFetcher(DataFetcher[ElectricityRecord]):
         if not data:
             self._logger.info("No data fetched.")
             return {}
+        self._logger.debug(f"Fetched raw data: {data}")
+        return data
 
     def get_url(self) -> str:
         concrete_url = self._url
@@ -39,7 +41,7 @@ class ElectricityFetcher(DataFetcher[ElectricityRecord]):
         for record in data:
             records.append(
                 ElectricityRecord(
-                    date=record["time_start"],
+                    timestamp=record["time_start"],
                     price=record["EUR_per_kWh"],
                 )
             )
