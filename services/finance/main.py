@@ -8,22 +8,23 @@ from dateutil.relativedelta import relativedelta
 finance_service = FastAPI()
 logger = Logger("finance_service")
 db_manager = ActionDBManager(
-    db_host="finance_db",
-    db_port=5432,
-    db_name="finance_db",
-    db_user="user",
-    db_password="secret",
+    host="finance_db",
+    port=5432,
+    name="finance_db",
+    user="user",
+    password="secret",
 )
 fetcher = ActionFetcher()
 
 
 @finance_service.get("/fetch_data")
 async def fetch_data(ticker: str, from_date: str, till_date: str):
-    fetcher.set_params(
-        ticker=ticker,
-        from_date=from_date,
-        till_date=till_date,
-    )
+    params = {
+        "ticker": ticker,
+        "from_date": from_date,
+        "till_date": till_date,
+    }
+    fetcher.set_params(params)
     data = await fetcher.fetch_data()
     logger.info(f"Fetched data for {ticker}: {data}")
     return {"ticker": ticker, "data": data}
