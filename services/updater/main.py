@@ -14,7 +14,7 @@ async def update_finance_data(ticker: str):
     try:
         async with httpx.AsyncClient(timeout=30.0) as client:
             update_response = await client.post(
-                "http://finance_service:8005/update_data", params={"ticker": ticker}
+                "http://finance:8005/update_data", params={"ticker": ticker}
             )
 
             if update_response.status_code != 200:
@@ -31,7 +31,7 @@ async def update_electricity_data():
     try:
         async with httpx.AsyncClient(timeout=30.0) as client:
             update_response = await client.post(
-                "http://electricity_service:8007/update_data",
+                "http://electricity:8007/update_data",
                 params={"date": today.strftime("%Y-%m-%d")},
             )
 
