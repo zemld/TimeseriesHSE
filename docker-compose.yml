@@ -1,6 +1,29 @@
-services:
+version: '3.8'
 
-  web_service:
+services:
+  finance_db:
+    image: timescale/timescaledb:latest-pg17
+    ports:
+      - "5432:5432"
+    volumes:
+      - finance_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_PASSWORD: secret
+      POSTGRES_USER: user
+      POSTGRES_DB: finance_db
+
+  electricity_db:
+    image: timescale/timescaledb:latest-pg17
+    ports:
+      - "5433:5432"
+    volumes:
+      - electricity_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_PASSWORD: secret
+      POSTGRES_USER: user
+      POSTGRES_DB: electricity_db
+
+  web:
     build: services/web
     ports:
       - "8000:8000"
@@ -9,85 +32,49 @@ services:
       - ./logger.py:/web/logger.py
       - ./tickers.py:/web/tickers.py
     depends_on:
-      - finance_db_service
-      - analyzer_service
+      - finance
+      - electricity
+      - analyzer
 
-  moex_service:
-    build: services/moex
+  finance:
+    build: services/finance
     ports:
-      - "8001:8001"
+      - "8005:8005"
     volumes:
-      - ./services/moex:/moex
-      - ./logger.py:/moex/logger.py
-
-  finance_db:
-    image: timescale/timescalefinance_db:latest-pg17
-    ports:
-      - "5432:5432"
-    volumes:
-      - timeseries_data:/var/lib/postgresql/data
-    environment:
-      POSTGRES_PASSWORD: secret
-      POSTGRES_USER: user
-      POSTGRES_DB: finance_db
-
-  finance_db_service:
-    build: services/finance_db
-    ports:
-      - "8002:8002"
-    volumes:
-      - ./services/finance_db:/finance_db_service
-      - ./logger.py:/finance_db_service/logger.py
-      - ./db_manager:/finance_db_service
+      - ./services/finance:/finance
+      - ./logger.py:/finance/logger.py
+      - ./concrete:/finance/concrete
+      - ./domain_objects:/finance/domain_objects
+      - ./abstractions:/finance/abstractions
     depends_on:
       - finance_db
 
-  electricity_service:
+  electricity:
     build: services/electricity
     ports:
       - "8007:8007"
     volumes:
       - ./services/electricity:/electricity
       - ./logger.py:/electricity/logger.py
-    depends_on:
-      - electricity_db_service
-
-  electricity_db:
-    image: timescale/timescalefinance_db:latest-pg17
-    ports:
-      - "5433:5433"
-    volumes:
-      - timeseries_data:/var/lib/postgresql/data
-    environment:
-      POSTGRES_PASSWORD: secret
-      POSTGRES_USER: user
-      POSTGRES_DB: electricity_db
-
-  electricity_db_service:
-    build: services/electricity_db
-    ports:
-      - "8006:8006"
-    volumes:
-      - ./services/electricity_db:/electricity_db_service
-      - ./logger.py:/electricity_db_service/logger.py
-      - ./db_manager:/electricity_db_service
+      - ./concrete:/electricity/concrete
+      - ./domain_objects:/electricity/domain_objects
+      - ./abstractions:/electricity/abstractions
     depends_on:
       - electricity_db
 
-  updater_service:
+  updater:
     build: services/updater
     ports:
       - "8003:8003"
     volumes:
       - ./services/updater:/updater
       - ./logger.py:/updater/logger.py
+      - ./tickers.py:/updater/tickers.py
     depends_on:
-      - moex_service
-      - finance_db_service
-      - electricity_service
-      - electricity_db_service
+      - finance
+      - electricity
 
-  analyzer_service:
+  analyzer:
     build: services/analyzer
     ports:
       - "8004:8004"
@@ -95,8 +82,9 @@ services:
       - ./services/analyzer:/analyzer
       - ./logger.py:/analyzer/logger.py
     depends_on:
-      - finance_db_service
-      - electricity_db_service
+      - finance
+      - electricity
 
 volumes:
-  timeseries_data:
+  finance_data:
+  electricity_data:
