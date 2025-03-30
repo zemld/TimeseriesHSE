@@ -1,0 +1,91 @@
+import tensorflow as tf
+import numpy as np
+from abstractions.analyzing_model import AnalyzingModel
+from sklearn.preprocessing import MinMaxScaler
+
+
+class RNNModel(AnalyzingModel):
+    def __init__(self, window_size=30, features=1):
+        self.window_size = window_size
+        self.features = features
+        self.model = self._build_model()
+        self.scaler = MinMaxScaler()
+
+    def _build_model(self):
+        model = tf.keras.Sequential(
+            [
+                tf.keras.layers.LSTM(
+                    units=64,
+                    activation="tanh",
+                    return_sequences=True,
+                    input_shape=(self.window_size, self.features),
+                ),
+                tf.keras.layers.Dropout(0.2),
+                tf.keras.layers.LSTM(units=32, activation="tanh"),
+                tf.keras.layers.Dropout(0.2),
+                tf.keras.layers.Dense(16, activation="relu"),
+                tf.keras.layers.Dense(1),
+            ]
+        )
+        model.compile(optimizer="adam", loss="mse")
+        return model
+
+    def _preprocess(self, data):
+        # Преобразуем данные в формат для RNN
+        sequences = []
+        for i in range(len(data) - self.window_size):
+            sequences.append(data[i : i + self.window_size])
+        return np.array(sequences)
+
+    def train(self, data):
+        scaled_data = self.scaler.fit_transform(data)
+        X = self._preprocess(scaled_data)
+        y = scaled_data[self.window_size :]
+        self.model.fit(X, y, epochs=15, batch_size=32, verbose=0)
+        return {"status": "success", "message": "Model trained successfully"}
+
+    def predict(self, data, horizon=5):
+        scaled_data = self.scaler.transform(data)
+        X = self._preprocess(scaled_data)
+        predictions = []
+
+        current_sequence = X[-1]
+        for _ in range(horizon):
+            next_pred = self.model.predict(np.expand_dims(current_sequence, axis=0))
+            predictions.append(next_pred[0, 0])
+            # Обновляем последовательность для следующего прогноза
+            current_sequence = np.vstack([current_sequence[1:], next_pred])
+
+        predictions = np.array(predictions).reshape(-1, 1)
+        return self.scaler.inverse_transform(predictions)
+
+    def analyze(self, data):
+        scaled_data = self.scaler.transform(data)
+        X = self._preprocess(scaled_data)
+        predictions = self.model.predict(X)
+
+        # Считаем метрики
+        mse = np.mean((predictions - scaled_data[self.window_size :]) ** 2)
+        trend = "up" if predictions[-1] > predictions[-2] else "down"
+
+        # Вычисляем среднее абсолютное отклонение
+        mae = np.mean(np.abs(predictions - scaled_data[self.window_size :]))
+
+        return {
+            "mse": float(mse),
+            "mae": float(mae),
+            "trend": trend,
+            "last_value": float(
+                self.scaler.inverse_transform(predictions[-1].reshape(1, -1))[0, 0]
+            ),
+        }
+
+    def save(self, path):
+        self.model.save(f"{path}/rnn_model")
+        np.save(f"{path}/scaler.npy", self.scaler)
+        return {"status": "success", "path": path}
+
+    def load(self, path):
+        self.model = tf.keras.models.load_model(f"{path}/rnn_model")
+        self.scaler = np.load(f"{path}/scaler.npy", allow_pickle=True)
+        return {"status": "success", "path": path}
