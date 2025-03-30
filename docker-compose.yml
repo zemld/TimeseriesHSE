@@ -81,6 +81,8 @@ services:
     volumes:
       - ./services/analyzer:/analyzer
       - ./logger.py:/analyzer/logger.py
+      - ./concrete/analyzing_models:/analyzer/concrete/analyzing_models
+      - ./abstractions:/analyzer/abstractions
     depends_on:
       - finance
       - electricity
