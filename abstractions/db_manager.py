@@ -82,6 +82,7 @@ class DBManager(ABC, Generic[T]):
         except Exception as e:
             await self.rollback_transaction()
             self._logger.error(f"Failed to update table {table_name}: {e}")
+            raise
 
     @abstractmethod
     async def create_table(self, table_name: str):
@@ -93,7 +94,7 @@ class DBManager(ABC, Generic[T]):
 
     async def delete_data(self, table_name: str, till_datetime: str):
         await self._check_and_create_connection()
-        delete_query = f"DELETE FROM {table_name} WHERE date < '{till_datetime}'"
+        delete_query = f"DELETE FROM {table_name} WHERE timestamp < '{till_datetime}'"
         async with self._pool.acquire() as connection:
             await connection.execute(delete_query)
             self._logger.info(

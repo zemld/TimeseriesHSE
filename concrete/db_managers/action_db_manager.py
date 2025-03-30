@@ -14,7 +14,7 @@ class ActionDBManager(DBManager[Action]):
         await self._check_and_create_connection()
         create_table_query = f"""
         CREATE TABLE IF NOT EXISTS {table_name} (
-            date TIMESTAMP PRIMARY KEY,
+            timestamp TIMESTAMP PRIMARY KEY,
             close DOUBLE PRECISION,
             open DOUBLE PRECISION,
             low DOUBLE PRECISION,
@@ -35,7 +35,7 @@ class ActionDBManager(DBManager[Action]):
             self._logger.warning("No data to insert.")
             return
         columns = [
-            "date",
+            "timestamp",
             "close",
             "open",
             "low",
@@ -63,7 +63,7 @@ class ActionDBManager(DBManager[Action]):
         query = f"""
         INSERT INTO {table_name} ({', '.join(columns)})
         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-        ON CONFLICT (date) DO UPDATE SET
+        ON CONFLICT (timestamp) DO UPDATE SET
             close = EXCLUDED.close,
             open = EXCLUDED.open,
             low = EXCLUDED.low,
@@ -84,7 +84,7 @@ class ActionDBManager(DBManager[Action]):
         await self._check_and_create_connection()
         select_query = f"""
         SELECT * FROM {table_name}
-        WHERE date BETWEEN '{from_datetime}' AND '{till_datetime}'
+        WHERE timestamp BETWEEN '{from_datetime}' AND '{till_datetime}'
         """
         async with self._pool.acquire() as connection:
             rows = await connection.fetch(select_query)
@@ -94,7 +94,7 @@ class ActionDBManager(DBManager[Action]):
         actions = []
         for row in rows:
             action = Action(
-                date_value=row["date"],
+                date_value=row["timestamp"],
                 close=row["close"],
                 open_value=row["open"],
                 low=row["low"],
