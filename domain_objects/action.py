@@ -24,7 +24,7 @@ class Action:
         value: float,
         numtrades: int,
     ):
-        self.date = date_value
+        self.date_value = date_value
         self.close = close
         self.open_value = open_value
         self.low = low
