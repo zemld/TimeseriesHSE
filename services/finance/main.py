@@ -33,7 +33,7 @@ async def fetch_data(ticker: str, from_date: str, till_date: str):
 @finance_service.post("/update_data")
 async def update_data_in_db(ticker: str):
     till_date = datetime.today().date()
-    from_date = till_date - relativedelta(years=1)
+    from_date = till_date - relativedelta(days=100)
     try:
         response = await fetch_data(ticker, str(from_date), str(till_date))
         data = response["data"]
