@@ -31,7 +31,6 @@ class RNNModel(AnalyzingModel):
         return model
 
     def _preprocess(self, data):
-        # Преобразуем данные в формат для RNN
         sequences = []
         for i in range(len(data) - self.window_size):
             sequences.append(data[i : i + self.window_size])
@@ -53,7 +52,6 @@ class RNNModel(AnalyzingModel):
         for _ in range(horizon):
             next_pred = self.model.predict(np.expand_dims(current_sequence, axis=0))
             predictions.append(next_pred[0, 0])
-            # Обновляем последовательность для следующего прогноза
             current_sequence = np.vstack([current_sequence[1:], next_pred])
 
         predictions = np.array(predictions).reshape(-1, 1)
@@ -64,11 +62,9 @@ class RNNModel(AnalyzingModel):
         X = self._preprocess(scaled_data)
         predictions = self.model.predict(X)
 
-        # Считаем метрики
         mse = np.mean((predictions - scaled_data[self.window_size :]) ** 2)
         trend = "up" if predictions[-1] > predictions[-2] else "down"
 
-        # Вычисляем среднее абсолютное отклонение
         mae = np.mean(np.abs(predictions - scaled_data[self.window_size :]))
 
         return {
@@ -79,13 +75,3 @@ class RNNModel(AnalyzingModel):
                 self.scaler.inverse_transform(predictions[-1].reshape(1, -1))[0, 0]
             ),
         }
-
-    def save(self, path):
-        self.model.save(f"{path}/rnn_model")
-        np.save(f"{path}/scaler.npy", self.scaler)
-        return {"status": "success", "path": path}
-
-    def load(self, path):
-        self.model = tf.keras.models.load_model(f"{path}/rnn_model")
-        self.scaler = np.load(f"{path}/scaler.npy", allow_pickle=True)
-        return {"status": "success", "path": path}

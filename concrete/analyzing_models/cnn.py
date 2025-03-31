@@ -31,7 +31,6 @@ class CNNModel(AnalyzingModel):
         return model
 
     def _preprocess(self, data):
-        # Convert data to right format for CNN
         sequences = []
         for i in range(len(data) - self.window_size):
             sequences.append(data[i : i + self.window_size])
@@ -53,7 +52,6 @@ class CNNModel(AnalyzingModel):
         for _ in range(horizon):
             next_pred = self.model.predict(np.expand_dims(current_sequence, axis=0))
             predictions.append(next_pred[0, 0])
-            # Update sequence for next prediction
             current_sequence = np.vstack([current_sequence[1:], next_pred])
 
         predictions = np.array(predictions).reshape(-1, 1)
@@ -64,7 +62,6 @@ class CNNModel(AnalyzingModel):
         X = self._preprocess(scaled_data)
         predictions = self.model.predict(X)
 
-        # Calculate metrics
         mse = np.mean((predictions - scaled_data[self.window_size :]) ** 2)
         trend = "up" if predictions[-1] > predictions[-2] else "down"
 
@@ -75,13 +72,3 @@ class CNNModel(AnalyzingModel):
                 self.scaler.inverse_transform(predictions[-1].reshape(1, -1))[0, 0]
             ),
         }
-
-    def save(self, path):
-        self.model.save(f"{path}/cnn_model")
-        np.save(f"{path}/scaler.npy", self.scaler)
-        return {"status": "success", "path": path}
-
-    def load(self, path):
-        self.model = tf.keras.models.load_model(f"{path}/cnn_model")
-        self.scaler = np.load(f"{path}/scaler.npy", allow_pickle=True)
-        return {"status": "success", "path": path}
