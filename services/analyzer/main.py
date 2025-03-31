@@ -5,7 +5,6 @@ from concrete.analyzing_models.cnn import CNNModel
 from concrete.analyzing_models.rnn import RNNModel
 from concrete.analyzing_models.tft import TFTModel
 import pandas as pd
-from typing import Tuple
 import numpy as np
 import os
 
