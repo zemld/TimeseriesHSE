@@ -87,6 +87,16 @@ services:
       - finance
       - electricity
 
+  streamlit:
+    build: services/streamlit
+    ports:
+      - "8501:8501"
+    volumes:
+      - ./services/streamlit:/streamlit
+      - ./logger.py:/streamlit/logger.py
+    depends_on:
+      - web
+
 volumes:
   finance_data:
   electricity_data:
