@@ -156,7 +156,7 @@ async def run_action_flow(request: Request):
                 "models_used": available_models,
             }
             cache_results(response_content)
-            return JSONResponse(content={"redirect": "http://streamlit:8501"})
+            return JSONResponse(content={"redirect": "http://ithse.ru:1171"})
     except Exception as e:
         logger.error(f"Error in run_action_flow: {str(e)}")
         return JSONResponse(
