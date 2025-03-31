@@ -48,5 +48,7 @@ async def update_data_in_db(ticker: str):
 @finance_service.get("/get_data")
 async def get_data(ticker: str, from_date: str, till_date: str):
     data = await db_manager.select(ticker, from_date, till_date)
+    for row in data:
+        row.date_value = row.date_value.date()
     logger.info(f"Retrieved data for {ticker}: {data}")
     return {"ticker": ticker, "data": data}
