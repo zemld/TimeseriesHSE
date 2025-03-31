@@ -5,7 +5,6 @@ import httpx
 from logger import Logger
 from tickers import action_value_to_enum
 import json
-import os
 
 webapp = FastAPI()
 templates = Jinja2Templates(directory="templates")
@@ -185,7 +184,9 @@ async def handle_error(request: Request):
 async def get_cached_results():
     try:
         with open("cached_results.json", "r") as f:
-            return JSONResponse(content=json.load(f))
+            result = json.load(f)
+            logger.debug(f"Loaded cached results: {result}")
+            return JSONResponse(content=result)
     except (FileNotFoundError, json.JSONDecodeError):
         return JSONResponse(
             status_code=404, content={"error": "No cached results available"}
