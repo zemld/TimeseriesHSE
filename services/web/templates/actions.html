@@ -82,6 +82,7 @@
         <input type="date" id="endDate">
         <button id="draw-chart-button">Провести анализ</button>
     </div>
+
     <script>
         const today = new Date();
         const yyyy = today.getFullYear();
@@ -131,36 +132,8 @@
                 return;
             }
 
-            const data = {
-                value: value,
-                start_date: start_date,
-                end_date: end_date,
-            };
-
-            fetch('/make-action-analysis', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(data)
-            })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Ошибка сервера: ' + response.status);
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    if (data.redirect) {
-                        window.location.href = data.redirect;
-                    } else if (data.error) {
-                        alert('Ошибка: ' + data.error);
-                    }
-                })
-                .catch(error => {
-                    console.error('Ошибка:', error);
-                    alert('Произошла ошибка при построении графика.');
-                });
+            sessionStorage.setItem('analysis_params', JSON.stringify({ value, start_date, end_date }));
+            window.location.href = "/waiting";
         });
     </script>
 </body>

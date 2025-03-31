@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ожидание анализа</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 50px;
+        }
+    </style>
+</head>
+
+<body>
+    <h2>Анализ данных...</h2>
+    <p>Подождите, идет обработка вашего запроса.</p>
+    <script>
+        const params = JSON.parse(sessionStorage.getItem('analysis_params'));
+        if (!params) {
+            alert("Ошибка: параметры запроса отсутствуют!");
+            window.location.href = "/actions";
+        } else {
+            fetch('/make-action-analysis', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(params)
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Ошибка сервера: ' + response.status);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.redirect) {
+                        window.location.href = data.redirect;
+                    } else if (data.error) {
+                        alert('Ошибка: ' + data.error);
+                        window.location.href = "/actions";
+                    }
+                })
+                .catch(error => {
+                    console.error('Ошибка:', error);
+                    alert('Произошла ошибка при анализе данных.');
+                    window.location.href = "/actions";
+                });
+        }
+    </script>
+</body>
+
+</html>

@@ -1,5 +1,5 @@
 from fastapi import FastAPI, Request
-from fastapi.responses import JSONResponse, RedirectResponse
+from fastapi.responses import JSONResponse
 from fastapi.templating import Jinja2Templates
 import httpx
 from logger import Logger
@@ -34,6 +34,12 @@ async def start(request: Request):
 @webapp.get("/actions")
 async def choose_action(request: Request):
     return templates.TemplateResponse("actions.html", {"request": request})
+
+
+@webapp.get("/waiting")
+async def waiting_page(request: Request):
+    """Отображает страницу ожидания анализа."""
+    return templates.TemplateResponse("waiting.html", {"request": request})
 
 
 @webapp.post("/make-action-analysis")
@@ -151,10 +157,7 @@ async def run_action_flow(request: Request):
                 "models_used": available_models,
             }
             cache_results(response_content)
-            return RedirectResponse(
-                url="http://localhost:8501",
-                status_code=303,
-            )
+            return JSONResponse(content={"redirect": "http://localhost:8501"})
     except Exception as e:
         logger.error(f"Error in run_action_flow: {str(e)}")
         return JSONResponse(
