@@ -1,7 +1,6 @@
 import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
-import plotly.express as px
 import httpx
 from logger import Logger
 from datetime import datetime
@@ -28,34 +27,46 @@ def get_cached_results():
         return None
 
 
-def plot_timeseries(df, ticker):
+def plot_timeseries(df, ticker=None, column_name="close"):
     fig = go.Figure()
     fig.add_trace(
         go.Scatter(
-            x=df["date_value"],
-            y=df["close"],
+            x=df["timestamp"] if "timestamp" in df.columns else df["date_value"],
+            y=df[column_name],
             mode="markers",
-            name=f"{ticker} Close Price",
+            name=f"{ticker + ' ' if ticker else ''}Price",
         )
     )
 
+    title = (
+        f"{ticker} Исторические цены" if ticker else "Исторические цены электричества"
+    )
+    y_label = "Цена" if column_name == "close" else "Цена (EUR/kWh)"
+
     fig.update_layout(
-        title=f"{ticker} Исторические цены",
+        title=title,
         xaxis_title="Дата",
-        yaxis_title="Цена",
+        yaxis_title=y_label,
         template="plotly_white",
         height=500,
     )
     return fig
 
 
-def plot_prediction(historical_df, prediction_data, ticker, model_name):
+def plot_prediction(
+    historical_df,
+    prediction_data,
+    title_prefix,
+    model_name,
+    x_column="date_value",
+    y_column="close",
+):
     fig = go.Figure()
 
     fig.add_trace(
         go.Scatter(
-            x=historical_df["date_value"],
-            y=historical_df["close"],
+            x=historical_df[x_column],
+            y=historical_df[y_column],
             mode="markers",
             name="Исторические данные",
         )
@@ -75,7 +86,7 @@ def plot_prediction(historical_df, prediction_data, ticker, model_name):
     )
 
     fig.update_layout(
-        title=f"Предсказания цен акций для {ticker} - модель {model_name}",
+        title=f"Предсказания цен для {title_prefix} - модель {model_name}",
         xaxis_title="Дата",
         yaxis_title="Цена",
         template="plotly_white",
@@ -108,13 +119,17 @@ def show_historical_analysis_result(model, analysis, df):
         st.error(f"Не удалось провести анализ с помощью модели {model}")
 
 
-def show_prediction_result(model, prediction, df, ticker):
+def show_prediction_result(
+    model, prediction, df, title_prefix, x_column="date_value", y_column="close"
+):
     st.subheader(f"Прогнозирование данных с помощью модели {model.upper()}")
     if model in prediction and "error" not in prediction[model]:
         model_prediction = prediction[model].get("forecast", [])
         logger.debug(f"Предсказания модели {model_prediction}")
         if model_prediction:
-            fig_pred = plot_prediction(df, model_prediction, ticker, model.upper())
+            fig_pred = plot_prediction(
+                df, model_prediction, title_prefix, model.upper(), x_column, y_column
+            )
             st.plotly_chart(fig_pred, use_container_width=True)
         else:
             st.info("Нет доступных данных для предсказания")
@@ -156,23 +171,49 @@ def show_finance_analysis_result(results):
             )
 
 
+def show_electricity_result_for_model(tabs, index, model, analysis, prediction, df):
+    with tabs[index]:
+        show_historical_analysis_result(model, analysis, df)
+        show_prediction_result(
+            model, prediction, df, "электричества", "timestamp", "price"
+        )
+
+
+def show_electricity_result(results):
+    historical_data = results["historical_data"].get("data", [])
+    logger.debug(f"Electricity historical data: {historical_data}")
+    analysis = results.get("analysis", {})
+    prediction = results.get("prediction", {})
+    models_used = results.get("models_used", [])
+    start_date = results.get("start_date", "Unknown")
+    end_date = results.get("end_date", "Unknown")
+
+    st.header(f"Анализ данных потребления электричества")
+    st.subheader(f"Период: {start_date} - {end_date}")
+
+    df = pd.DataFrame(historical_data)
+    df["timestamp"] = pd.to_datetime(df["timestamp"])
+    logger.debug(f"Electricity DataFrame: {df}")
+
+    st.subheader("Исторические данные")
+    fig = plot_timeseries(df, column_name="price")
+    st.plotly_chart(fig, use_container_width=True)
+
+    if len(models_used) > 0:
+        tabs = st.tabs(models_used)
+
+        for i, model in enumerate(models_used):
+            show_electricity_result_for_model(tabs, i, model, analysis, prediction, df)
+
+
 def main():
-    st.title("📊 Анализ финансовых временных рядов")
+    st.title("📊 Анализ временных рядов")
 
     if "last_refresh" not in st.session_state:
         st.session_state.last_refresh = None
 
-    # col1, col2 = st.columns([4, 1])
-    # with col1:
-    #     if st.session_state.last_refresh:
-    #         st.info(
-    #             f"Последнее обновление: {st.session_state.last_refresh.strftime('%H:%M:%S')}"
-    #         )
-    # with col2:
-    #     refresh = st.button("🔄 Обновить")
-
     with st.spinner("Загрузка данных..."):
-        if st.session_state.last_refresh is None:  # or refresh:
+        if st.session_state.last_refresh is None:
             results = get_cached_results()
             st.session_state.results = results
             st.session_state.last_refresh = datetime.now()
@@ -183,7 +224,10 @@ def main():
         st.info("Нет доступных данных. Необходимо сначала провести анализ.")
         return
 
-    show_finance_analysis_result(results)
+    if "ticker" in results:
+        show_finance_analysis_result(results)
+    else:
+        show_electricity_result(results)
 
 
 if __name__ == "__main__":

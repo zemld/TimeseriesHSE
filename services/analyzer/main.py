@@ -38,7 +38,7 @@ for model_name, model in models.items():
         )
 
 
-async def get_parameters(request: Request, has_horizon=False):
+async def get_action_parameters(request: Request, has_horizon=False):
     data_json = await request.json()
     data = data_json.get("data", []).get("data", [])
     model_type = data_json.get("model_type", "cnn")
@@ -49,6 +49,18 @@ async def get_parameters(request: Request, has_horizon=False):
         return (data, model_type, ticker, horizon)
     logger.debug(f"Received parameters: {data}, {model_type}, {ticker}")
     return (data, model_type, ticker)
+
+
+async def get_electricity_parameters(request: Request, has_horizon=False):
+    data_json = await request.json()
+    data = data_json.get("data", []).get("data", [])
+    model_type = data_json.get("model_type", "cnn")
+    if has_horizon:
+        horizon = data_json.get("horizon", 5)
+        logger.debug(f"Received parameters: {data}, {model_type}, {horizon}")
+        return (data, model_type, horizon)
+    logger.debug(f"Received parameters: {data}, {model_type}")
+    return (data, model_type)
 
 
 def check_model(model_type):
@@ -85,10 +97,14 @@ def train_and_save_models(model_type: str, target):
             models[model_type].scaler.fit(target)
 
 
-def make_analysis(data: pd.DataFrame, model_type: str, target: np.ndarray, ticker: str):
+def make_analysis(
+    data: pd.DataFrame, model_type: str, target: np.ndarray, ticker: str = None
+):
     logger.debug(f"Starting analysis with {model_type} model")
     analysis = models[model_type].analyze(target)
-    logger.debug(f"Analysis completed for {ticker} using {model_type}: {analysis}")
+    logger.debug(
+        f"Analysis completed for {ticker if ticker is not None else 'electricity'} using {model_type}: {analysis}"
+    )
 
     analysis["data_points"] = len(target)
     analysis["start_date"] = (
@@ -103,27 +119,26 @@ def make_analysis(data: pd.DataFrame, model_type: str, target: np.ndarray, ticke
 @analyzer.post("/analize_finance_data")
 async def analize_finance_data(request: Request):
     try:
-        data, model_type, ticker = await get_parameters(request)
+        data, model_type, ticker = await get_action_parameters(request)
         logger.info(f"Analyzing data for {ticker} with model {model_type}")
 
         if not data:
             raise Exception("No data provided for analysis")
-        logger.debug(
-            f"Before converting to dataframe scaler has type: {type(models[model_type].scaler)}"
-        )
         df, prices = convert_to_dataframe(data, "close")
-        logger.debug(
-            f"After converting to dataframe scaler has type: {type(models[model_type].scaler)}"
-        )
         train_and_save_models(model_type, prices)
-        logger.debug(
-            f"After training and saving models scaler has type: {type(models[model_type].scaler)}"
-        )
         analysis = make_analysis(df, model_type, prices, ticker)
         return {"ticker": ticker, "model": model_type, "analysis": analysis}
     except Exception as e:
         logger.error(f"Error during analysis: {str(e)}")
         return {"error": str(e)}
+
+
+def get_last_date_from_df(df: pd.DataFrame, column_name: str):
+    date_values = df[column_name]
+    last_date = pd.to_datetime(date_values[0])
+    for date in date_values:
+        last_date = max(last_date, pd.to_datetime(date))
+    return last_date
 
 
 def make_prediction(
@@ -132,21 +147,25 @@ def make_prediction(
     logger.debug(f"Starting prediction with {model_type} model")
     predictions = models[model_type].predict(target, horizon=horizon)
     logger.debug(f"Generated {len(predictions)} prediction points")
-
+    logger.debug(f"head of df: {data.head()}")
     try:
-        last_date = (
-            pd.to_datetime(data["timestamp"].iloc[-1])
-            if "timestamp" in data.columns
-            else pd.Timestamp.now()
-        )
-        dates = pd.date_range(
-            start=last_date + pd.Timedelta(days=1),
-            periods=len(predictions),
-            freq="D",
-        )
+        last_date = get_last_date_from_df(data, "timestamp")
+        logger.debug(f"Last date is {last_date}")
+        if len(data.columns) == 2:
+            dates = pd.date_range(
+                start=last_date + pd.Timedelta(days=1),
+                periods=len(predictions),
+                freq="H",
+            )
+        else:
+            dates = pd.date_range(
+                start=last_date + pd.Timedelta(days=1),
+                periods=len(predictions),
+                freq="D",
+            )
 
         forecast = [
-            {"timestamp": date.strftime("%Y-%m-%d"), "price": float(price[0])}
+            {"timestamp": date.strftime("%Y-%m-%d %H:%M:%S"), "price": float(price[0])}
             for date, price in zip(dates, predictions)
         ]
         logger.debug(f"Formatted prediction results: {len(forecast)} points")
@@ -163,7 +182,7 @@ def make_prediction(
 @analyzer.post("/predict_finance_data")
 async def predict_finance_data(request: Request):
     try:
-        data, model_type, ticker, horizon = await get_parameters(
+        data, model_type, ticker, horizon = await get_action_parameters(
             request, has_horizon=True
         )
         logger.info(
@@ -183,6 +202,55 @@ async def predict_finance_data(request: Request):
 
         return {
             "ticker": ticker,
+            "model": model_type,
+            "horizon": horizon,
+            "forecast": forecast,
+            "last_observed_price": float(prices[-1][0]) if len(prices) > 0 else None,
+        }
+    except Exception as e:
+        logger.error(f"Error during prediction: {str(e)}")
+        return {"error": str(e)}
+
+
+@analyzer.post("/analize_electricity_data")
+async def analize_electricity_data(request: Request):
+    try:
+        data, model_type = await get_electricity_parameters(request)
+        logger.info(f"Analyzing data for electricity with model {model_type}")
+
+        if not data:
+            raise Exception("No data provided for analysis")
+        df, prices = convert_to_dataframe(data, "price")
+        train_and_save_models(model_type, prices)
+        analysis = make_analysis(df, model_type, prices)
+        return {"model": model_type, "analysis": analysis}
+    except Exception as e:
+        logger.error(f"Error during analysis: {str(e)}")
+        return {"error": str(e)}
+
+
+@analyzer.post("/predict_electricity_data")
+async def predict_electricity_data(request: Request):
+    try:
+        data, model_type, horizon = await get_electricity_parameters(
+            request, has_horizon=True
+        )
+        logger.info(
+            f"Predicting for electricity with model {model_type}, horizon={horizon}"
+        )
+
+        if not data:
+            raise Exception("No data provided for prediction")
+
+        check_model(model_type)
+
+        df, prices = convert_to_dataframe(data, "price")
+        train_and_save_models(model_type, prices)
+
+        forecast = make_prediction(df, model_type, prices, horizon)
+        logger.info(f"Prediction completed for electricity using {model_type}")
+
+        return {
             "model": model_type,
             "horizon": horizon,
             "forecast": forecast,

@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Анализ данных</title>
+    <title>Electricity</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -61,23 +61,50 @@
 
 <body>
     <div class="form-container">
-        <input type="date" id="analysisDate">
+        <input type="date" id="fromDate">
         <button id="analyze-button">Провести анализ</button>
     </div>
     <script>
         const today = new Date();
-        const yyyy = today.getFullYear();
-        const mm = String(today.getMonth() + 1).padStart(2, '0');
+        const pastDate = new Date(today);
+        pastDate.setMonth(today.getMonth() - 3);
+        const yyyyPast = pastDate.getFullYear();
+        const mmPast = String(pastDate.getMonth() + 1).padStart(2, '0');
         const dd = String(today.getDate()).padStart(2, '0');
 
-        const pastYear = yyyy - 3;
-        const minDate = `${pastYear}-${mm}-${dd}`;
+        const minDate = `${yyyyPast}-${mmPast}-${dd}`;
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, '0');
         const currentDate = `${yyyy}-${mm}-${dd}`;
 
-        const analysisDateInput = document.getElementById('analysisDate');
+        const analysisDateInput = document.getElementById('fromDate');
         analysisDateInput.min = minDate;
         analysisDateInput.max = currentDate;
         analysisDateInput.value = minDate;
+
+        document.getElementById('analyze-button').addEventListener('click', function () {
+            const fromDate = analysisDateInput.value;
+
+            if (!fromDate) {
+                alert('Пожалуйста, выберите дату анализа!');
+                return;
+            }
+
+            const selectedDate = new Date(fromDate);
+            const minAllowedDate = new Date(minDate);
+            if (selectedDate < minAllowedDate) {
+                alert('Дата анализа не может быть более чем на 3 года раньше текущей!');
+                return;
+            }
+
+            if (selectedDate > today) {
+                alert('Дата анализа не может превышать текущую дату!');
+                return;
+            }
+
+            sessionStorage.setItem('analysis_params', JSON.stringify({ fromDate }));
+            window.location.href = "/waiting-for-electricity-analysis";
+        });
     </script>
 </body>
 
