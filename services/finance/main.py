@@ -25,6 +25,7 @@ async def fetch_data(ticker: str, from_date: str, till_date: str):
         "till_date": till_date,
     }
     fetcher.set_params(params)
+    logger.debug(f"Fetching data with params: {params}")
     data = await fetcher.fetch_data()
     logger.info(f"Fetched data for {ticker}: {len(data)} records")
     return {"ticker": ticker, "data": data}
@@ -44,7 +45,9 @@ async def update_data_in_db(ticker: str, from_date: str, till_date: str):
             response = await fetch_data(
                 ticker, str(from_tmp_date), str(min(till_tmp_date, till_date_as_date))
             )
+            logger.debug(f"Response: {response}")
             data = response["data"]
+            logger.debug("Data fetched successfully.")
             await db_manager.update(ticker, from_date, data)
             logger.info(f"Updated data for {ticker} in DB.")
         except Exception as e:
@@ -58,6 +61,6 @@ async def update_data_in_db(ticker: str, from_date: str, till_date: str):
 async def get_data(ticker: str, from_date: str, till_date: str):
     data = await db_manager.select(ticker, from_date, till_date)
     for row in data:
-        row.date_value = row.date_value.date()
+        row.date_value = row.timestamp.date()
     logger.info(f"Retrieved {len(data)} records for {ticker}: {data}")
     return {"ticker": ticker, "data": data}

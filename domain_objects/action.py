@@ -2,7 +2,7 @@ from datetime import date
 
 
 class Action:
-    date_value: date
+    timestamp: date
     close: float
     open_value: float
     low: float
@@ -14,7 +14,7 @@ class Action:
 
     def __init__(
         self,
-        date_value: date,
+        timestamp: date,
         close: float,
         open_value: float,
         low: float,
@@ -24,7 +24,7 @@ class Action:
         value: float,
         numtrades: int,
     ):
-        self.date_value = date_value
+        self.timestamp = timestamp
         self.close = close
         self.open_value = open_value
         self.low = low

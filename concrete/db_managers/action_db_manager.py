@@ -47,7 +47,7 @@ class ActionDBManager(DBManager[Action]):
         ]
         values = [
             (
-                date.fromisoformat(a.date_value),
+                date.fromisoformat(a.timestamp),
                 a.close,
                 a.open_value,
                 a.low,
@@ -89,12 +89,12 @@ class ActionDBManager(DBManager[Action]):
         async with self._pool.acquire() as connection:
             rows = await connection.fetch(select_query)
             self._logger.info(
-                f"Selected records from {table_name} between {from_datetime} and {till_datetime}"
+                f"Selected {len(rows)} records from {table_name} between {from_datetime} and {till_datetime}"
             )
         actions = []
         for row in rows:
             action = Action(
-                date_value=row["timestamp"],
+                timestamp=row["timestamp"],
                 close=row["close"],
                 open_value=row["open"],
                 low=row["low"],

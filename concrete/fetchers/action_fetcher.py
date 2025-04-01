@@ -63,7 +63,7 @@ class ActionFetcher(DataFetcher[Action]):
                 record_date = str(record[tradedate_index])
                 actions.append(
                     Action(
-                        date_value=record_date,
+                        timestamp=record_date,
                         close=record[close_index],
                         open_value=record[open_index],
                         low=record[low_index],
