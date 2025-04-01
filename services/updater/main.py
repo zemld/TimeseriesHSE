@@ -35,26 +35,26 @@ async def update_finance_data(ticker: str, from_date: str, till_date: str):
 
 async def update_electricity_data():
     today = datetime.today().date()
-    current_date = today - relativedelta(days=50)
-    while current_date < today:
-        try:
-            async with httpx.AsyncClient(timeout=30.0) as client:
-                update_response = await client.post(
-                    "http://electricity:8007/update_data",
-                    params={"date": current_date.strftime("%Y-%m-%d")},
+    from_date = today - relativedelta(months=3)
+    try:
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            update_response = await client.post(
+                "http://electricity:8007/update_data",
+                params={
+                    "from_date": from_date.strftime("%Y-%m-%d"),
+                    "till_date": today.strftime("%Y-%m-%d"),
+                },
+            )
+
+            if update_response.status_code != 200:
+                logger.error(
+                    f"Failed to update electricity data in DB: {update_response.text}"
                 )
+                return
 
-                if update_response.status_code != 200:
-                    logger.error(
-                        f"Failed to update electricity data in DB: {update_response.text}"
-                    )
-                    return
-
-                logger.debug("Electricity data updated successfully.")
-        except Exception as e:
-            logger.error(f"Failed to fetch electricity data: {str(e)}")
-        finally:
-            current_date += relativedelta(days=1)
+            logger.debug("Electricity data updated successfully.")
+    except Exception as e:
+        logger.error(f"Failed to fetch electricity data: {str(e)}")
 
 
 @data_updater.on_event("startup")

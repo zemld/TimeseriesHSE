@@ -3,6 +3,7 @@ from concrete.db_managers.electricity_db_manager import ElectricityDBManager
 from concrete.fetchers.electricity_fetcher import ElectricityFetcher
 from logger import Logger
 from datetime import datetime
+from dateutil.relativedelta import relativedelta
 
 electricity_service = FastAPI()
 logger = Logger("electricity_service")
@@ -41,26 +42,20 @@ async def fetch_data(date: str):
 
 
 @electricity_service.post("/update_data")
-async def update_data_in_db(date: str):
-    params = get_date_parts_from_date(date)
-    year = params["year"]
-    month = params["month"]
-    day = params["day"]
-
-    try:
-        logger.info(f"Updating electricity data for {year}-{month}-{day}")
-        response = await fetch_data(date)
-        data = response["data"]
-        await db_manager.update("electricity", date, data)
-        logger.info(f"Updated electricity data for {year}-{month}-{day} in DB.")
-        return {
-            "date": f"{year}-{month}-{day}",
-            "status": "updated",
-            "records": len(data),
-        }
-    except Exception as e:
-        logger.error(f"Error updating electricity data: {str(e)}")
-        return {"error": str(e)}
+async def update_data_in_db(from_date: str, till_date: str):
+    current_date = datetime.strptime(from_date, "%Y-%m-%d").date()
+    till_date_as_date = datetime.strptime(till_date, "%Y-%m-%d").date()
+    while current_date <= till_date_as_date:
+        try:
+            logger.info(f"Updating electricity data for {current_date}")
+            response = await fetch_data(str(current_date))
+            data = response["data"]
+            await db_manager.update("electricity", from_date, data)
+            logger.info(f"Updated electricity data for {current_date} in DB.")
+        except Exception as e:
+            logger.error(f"Error updating electricity data: {str(e)}")
+        finally:
+            current_date += relativedelta(days=1)
 
 
 @electricity_service.get("/get_data")
