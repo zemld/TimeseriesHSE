@@ -67,10 +67,8 @@
             <option value="" disabled selected>Выберите акцию</option>
             <option value="сбер">Сбер</option>
             <option value="газпром">Газпром</option>
-            <option value="лукойл">Лукойл</option>
             <option value="роснефть">Роснефть</option>
             <option value="яндекс">Яндекс</option>
-            <option value="аэрофлот">Аэрофлот</option>
             <option value="мтс">МТС</option>
             <option value="нлмк">НЛМК</option>
             <option value="полюс">Полюс</option>
@@ -133,7 +131,7 @@
             }
 
             sessionStorage.setItem('analysis_params', JSON.stringify({ value, start_date, end_date }));
-            window.location.href = "/waiting";
+            window.location.href = "/waiting-for-action-analysis";
         });
     </script>
 </body>
