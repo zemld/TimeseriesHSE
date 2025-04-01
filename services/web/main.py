@@ -296,9 +296,8 @@ async def run_electricity_flow(request: Request):
                 "models_used": available_models,
             }
             cache_results(response_content)
-            # При запуске программы локально переадресация должна быть на http://localhost:8501
-            redirect_address = "http://localhost:8501"
-            # redirect_address = "http://ithse.ru:1171"
+            # redirect_address = "http://localhost:8501" Для запуска локально
+            redirect_address = "http://ithse.ru:1171"
             return JSONResponse(content={"redirect": redirect_address})
     except Exception as e:
         logger.error(f"Error in run_electricity_flow: {str(e)}")
