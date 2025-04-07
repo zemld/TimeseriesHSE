@@ -26,23 +26,32 @@ async def fetch_data(ticker: str, from_date: str, till_date: str):
     }
     fetcher.set_params(params)
     data = await fetcher.fetch_data()
-    logger.info(f"Fetched data for {ticker}: {data}")
+    logger.info(f"Fetched data for {ticker}: {len(data)} records")
     return {"ticker": ticker, "data": data}
 
 
 @finance_service.post("/update_data")
-async def update_data_in_db(ticker: str):
-    till_date = datetime.today().date()
-    from_date = till_date - relativedelta(days=100)
-    try:
-        response = await fetch_data(ticker, str(from_date), str(till_date))
-        data = response["data"]
-        await db_manager.update(ticker, str(from_date), data)
-        logger.info(f"Updated data for {ticker} in DB.")
-        return {"ticker": ticker, "status": "updated"}
-    except Exception as e:
-        logger.error(f"Error updating data for {ticker}: {str(e)}")
-        return {"error": str(e)}
+async def update_data_in_db(ticker: str, from_date: str, till_date: str):
+    from_tmp_date = datetime.strptime(from_date, "%Y-%m-%d").date()
+    till_date_as_date = datetime.strptime(till_date, "%Y-%m-%d").date()
+    till_tmp_date = from_tmp_date + relativedelta(days=100)
+    logger.debug(f"From date: {from_tmp_date}, Till date: {till_tmp_date}")
+    while from_tmp_date < till_date_as_date:
+        try:
+            logger.info(
+                f"Updating data for {ticker} from {from_tmp_date} to {min(till_tmp_date, till_date_as_date)}"
+            )
+            response = await fetch_data(
+                ticker, str(from_tmp_date), str(min(till_tmp_date, till_date_as_date))
+            )
+            data = response["data"]
+            await db_manager.update(ticker, from_date, data)
+            logger.info(f"Updated data for {ticker} in DB.")
+        except Exception as e:
+            logger.error(f"Error updating data for {ticker}: {str(e)}")
+        finally:
+            from_tmp_date = till_tmp_date
+            till_tmp_date = from_tmp_date + relativedelta(days=100)
 
 
 @finance_service.get("/get_data")
@@ -50,5 +59,5 @@ async def get_data(ticker: str, from_date: str, till_date: str):
     data = await db_manager.select(ticker, from_date, till_date)
     for row in data:
         row.date_value = row.date_value.date()
-    logger.info(f"Retrieved data for {ticker}: {data}")
+    logger.info(f"Retrieved {len(data)} records for {ticker}: {data}")
     return {"ticker": ticker, "data": data}

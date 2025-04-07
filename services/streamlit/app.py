@@ -15,7 +15,6 @@ st.set_page_config(
 )
 
 
-@st.cache_data(ttl=300)
 def get_cached_results():
     try:
         response = httpx.get("http://web:8000/get-cached-results")
@@ -159,7 +158,27 @@ def show_finance_analysis_result(results):
 
 def main():
     st.title("📊 Анализ финансовых временных рядов")
-    results = get_cached_results()
+
+    if "last_refresh" not in st.session_state:
+        st.session_state.last_refresh = None
+
+    # col1, col2 = st.columns([4, 1])
+    # with col1:
+    #     if st.session_state.last_refresh:
+    #         st.info(
+    #             f"Последнее обновление: {st.session_state.last_refresh.strftime('%H:%M:%S')}"
+    #         )
+    # with col2:
+    #     refresh = st.button("🔄 Обновить")
+
+    with st.spinner("Загрузка данных..."):
+        if st.session_state.last_refresh is None:  # or refresh:
+            results = get_cached_results()
+            st.session_state.results = results
+            st.session_state.last_refresh = datetime.now()
+        else:
+            results = st.session_state.results
+
     if not results:
         st.info("Нет доступных данных. Необходимо сначала провести анализ.")
         return
@@ -168,4 +187,7 @@ def main():
 
 
 if __name__ == "__main__":
+    if not st.runtime.exists():
+        for key in st.session_state.keys():
+            del st.session_state[key]
     main()
